@@ -6,6 +6,7 @@ import {
   ProductInsert,
 } from '../models/inventory.model';
 import { CategoryService } from './category.service';
+import { ImageOptimizationService } from './image-optimization.service';
 import { SupabaseService } from './supabase.service';
 
 @Injectable({
@@ -14,6 +15,7 @@ import { SupabaseService } from './supabase.service';
 export class InventoryService {
   private readonly supabase = inject(SupabaseService);
   private readonly categoryService = inject(CategoryService);
+  private readonly imageOptimization = inject(ImageOptimizationService);
   private readonly productsSignal = signal<Product[]>([]);
   readonly products = this.productsSignal.asReadonly();
 
@@ -185,7 +187,7 @@ export class InventoryService {
       .download(img.image_url);
 
       if (fileData) {
-        const file = new File([fileData], img.filename, { type: img.mime_type || 'image/jpeg' });
+        const file = new File([fileData], img.filename, { type: 'image/webp' });
         files.push(file);
       }
     }
@@ -194,10 +196,11 @@ export class InventoryService {
   }
 
   private async uploadProductImages(productId: string, files: File[]): Promise<void> {
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${ productId }/${ crypto.randomUUID() }.${ fileExt }`;
+    const optimizedFiles = await this.imageOptimization.optimizeImages(files);
+
+    for (let i = 0; i < optimizedFiles.length; i++) {
+      const file = optimizedFiles[i];
+      const fileName = `${ productId }/${ crypto.randomUUID() }.webp`;
 
       const { error: uploadError } = await this.supabase.client.storage
       .from('product-images')
@@ -216,7 +219,7 @@ export class InventoryService {
         image_url: fileName,
         filename: file.name,
         file_size: file.size,
-        mime_type: file.type,
+        mime_type: 'image/webp',
         display_order: i,
       };
 
