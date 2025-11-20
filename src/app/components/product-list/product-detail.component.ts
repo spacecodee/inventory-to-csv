@@ -62,6 +62,15 @@ export class ProductDetailComponent {
     { label: 'Nombres de Imágenes', key: 'imagenes', type: 'text' },
   ];
 
+  // Computed signal to generate stable URLs for images
+  imageUrls = computed(() => {
+    const files = this.localFiles();
+    return files.map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file),
+    }));
+  });
+
   constructor() {
     effect(() => {
       const p = this.product();
@@ -76,17 +85,77 @@ export class ProductDetailComponent {
           }
         });
       }
+
+      // Render barcode whenever product changes
+      if (p?.codigoBarras) {
+        this.renderBarcode(p.codigoBarras).catch(() => {
+        });
+      }
     });
   }
 
-  // Computed signal to generate stable URLs for images
-  imageUrls = computed(() => {
-    const files = this.localFiles();
-    return files.map((file) => ({
-      name: file.name,
-      url: URL.createObjectURL(file),
-    }));
-  });
+  // Render barcode into the SVG with id 'barcode-svg'
+  private async renderBarcode(value: string) {
+    try {
+      const JsBarcode = (await import('jsbarcode')).default || (await import('jsbarcode'));
+      const svg = document.getElementById('barcode-svg') as SVGElement | null;
+      if (!svg) return;
+      // Clear previous contents
+      while (svg.firstChild) svg.firstChild.remove();
+      // @ts-ignore - JsBarcode types may not match default import shape
+      JsBarcode(svg, String(value), {
+        format: 'CODE128',
+        displayValue: true,
+        fontSize: 14,
+        height: 60,
+      });
+    } catch (err) {
+      // fail silently if barcode lib not available
+      console.error('Failed to render barcode', err);
+    }
+  }
+
+  // Download the barcode as PNG
+  async downloadBarcode() {
+    const svg = document.getElementById('barcode-svg') as SVGSVGElement | null;
+    if (!svg) return;
+
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svg);
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const img = new Image();
+    img.onload = async () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width || 600;
+        canvas.height = img.height || 200;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        // white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob((pngBlob) => {
+          if (!pngBlob) return;
+          const a = document.createElement('a');
+          const pngUrl = URL.createObjectURL(pngBlob);
+          a.href = pngUrl;
+          const code = this.product()?.codigoBarras || 'barcode';
+          a.download = `${ code }.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(pngUrl);
+        }, 'image/png');
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  }
 
   getValue(key: string): any {
     const val = (this.product() as any)[key];
