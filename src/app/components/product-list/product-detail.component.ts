@@ -1,14 +1,15 @@
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { Product } from '../../models/inventory.model';
+import { InventoryService } from '../../services/inventory.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, HlmIconImports, NgOptimizedImage],
+  imports: [CommonModule, HlmIconImports],
   providers: [provideIcons({ lucideX })],
   template: `
     <div
@@ -42,7 +43,7 @@ import { Product } from '../../models/inventory.model';
                     <div
                       class="relative group rounded-lg overflow-hidden border border-border w-48 h-48 flex-shrink-0 bg-secondary/10"
                     >
-                      <img [ngSrc]="item.url" class="w-full h-full object-cover" alt="Product Image" fill/>
+                      <img [src]="item.url" class="w-full h-full object-cover" alt="Product Image"/>
                       <div
                         class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate text-center"
                       >
@@ -89,14 +90,35 @@ import { Product } from '../../models/inventory.model';
   `,
 })
 export class ProductDetailComponent {
+  private readonly inventoryService = inject(InventoryService);
   product = input.required<Product>();
   closeModal = output<void>();
 
   protected readonly closeIcon: any = 'lucideX';
+  private readonly localFiles = signal<File[]>([]);
+
+  constructor() {
+    effect(() => {
+      const p = this.product();
+      // Reset local files when product changes
+      this.localFiles.set([]);
+
+      if (p.imageFiles && p.imageFiles.length > 0) {
+        this.localFiles.set(p.imageFiles);
+      } else {
+        // Try to load from DB
+        this.inventoryService.getProductImages(p.id).then((files) => {
+          if (files.length > 0) {
+            this.localFiles.set(files);
+          }
+        });
+      }
+    });
+  }
 
   // Computed signal to generate stable URLs for images
   imageUrls = computed(() => {
-    const files = this.product().imageFiles || [];
+    const files = this.localFiles();
     return files.map((file) => ({
       name: file.name,
       url: URL.createObjectURL(file),

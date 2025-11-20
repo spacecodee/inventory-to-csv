@@ -1,10 +1,12 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Product } from '../models/inventory.model';
+import { ImagePersistenceService } from './image-persistence.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InventoryService {
+  private readonly imageService = inject(ImagePersistenceService);
   private readonly productsSignal = signal<Product[]>([]);
   readonly products = this.productsSignal.asReadonly();
 
@@ -18,6 +20,10 @@ export class InventoryService {
       this.saveToStorage(newProducts);
       return newProducts;
     });
+
+    if (product.imageFiles && product.imageFiles.length > 0) {
+      this.imageService.saveImages(product.id, product.imageFiles).then(() => undefined);
+    }
   }
 
   removeProduct(id: string) {
@@ -26,11 +32,17 @@ export class InventoryService {
       this.saveToStorage(newProducts);
       return newProducts;
     });
+    this.imageService.deleteImages(id).then(() => undefined);
   }
 
   clearProducts() {
     this.productsSignal.set([]);
     localStorage.removeItem('inventory_products');
+    this.imageService.clearAll().then(() => undefined);
+  }
+
+  async getProductImages(id: string): Promise<File[]> {
+    return this.imageService.getImages(id);
   }
 
   private saveToStorage(products: Product[]) {
