@@ -15,25 +15,30 @@ export class AuthService {
   private readonly loadingSignal = signal<boolean>(true);
 
   readonly user = this.userSignal.asReadonly();
+  readonly session = this.sessionSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
 
   constructor() {
     this.initializeAuth();
+    this.setupAuthStateListener();
   }
 
   private initializeAuth(): void {
-    this.checkSession().catch((error) => {
+    this.restoreSession().catch((error) => {
       console.error('Failed to initialize auth:', error);
       this.loadingSignal.set(false);
     });
+  }
 
+  private setupAuthStateListener(): void {
     this.supabase.client.auth.onAuthStateChange((_event, session) => {
       this.sessionSignal.set(session);
       this.userSignal.set(session?.user ?? null);
+      this.loadingSignal.set(false);
     });
   }
 
-  private async checkSession(): Promise<void> {
+  private async restoreSession(): Promise<void> {
     const { data, error } = await this.supabase.client.auth.getSession();
 
     if (error) {
@@ -42,8 +47,11 @@ export class AuthService {
       return;
     }
 
-    this.sessionSignal.set(data.session);
-    this.userSignal.set(data.session?.user ?? null);
+    if (data.session) {
+      this.sessionSignal.set(data.session);
+      this.userSignal.set(data.session.user ?? null);
+    }
+
     this.loadingSignal.set(false);
   }
 
