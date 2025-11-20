@@ -63,11 +63,12 @@ jobs:
 
     steps:
       - name: Trigger Dokploy webhook with unique tag
+        env:
+          REGISTRY: ghcr.io
+          IMAGE_NAME: ${{ github.repository }}
         run: |
           IMAGE_TAG="main-$(echo ${{ github.sha }} | cut -c1-7)"
           curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"image\": \"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}\"
-            }"
+            -d "{\"image\": \"${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}\"}"
           echo "Triggered deployment with image tag: ${IMAGE_TAG}"
