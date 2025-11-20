@@ -1,3 +1,119 @@
+export interface CategoryEntity {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CategoryInsert {
+  name: string;
+  description?: string | null;
+}
+
+export interface CategoryUpdate {
+  name?: string;
+  description?: string | null;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface ProductEntity {
+  id: string;
+  nombre: string;
+  codigo_interno: string | null;
+  modelo: string | null;
+  codigo_sunat: string | null;
+  codigo_tipo_unidad: string | null;
+  codigo_tipo_moneda: string | null;
+  precio_unitario_venta: number;
+  codigo_tipo_afectacion_igv_venta: string | null;
+  tiene_igv: boolean;
+  precio_unitario_compra: number;
+  codigo_tipo_afectacion_igv_compra: string | null;
+  stock: number;
+  stock_minimo: number;
+  categoria_id: string | null;
+  marca: string | null;
+  descripcion: string | null;
+  nombre_secundario: string | null;
+  codigo_lote: string | null;
+  fecha_vencimiento: string | null;
+  codigo_barras: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductInsert {
+  nombre: string;
+  codigo_interno?: string | null;
+  modelo?: string | null;
+  codigo_sunat?: string | null;
+  codigo_tipo_unidad?: string | null;
+  codigo_tipo_moneda?: string | null;
+  precio_unitario_venta: number;
+  codigo_tipo_afectacion_igv_venta?: string | null;
+  tiene_igv?: boolean;
+  precio_unitario_compra?: number;
+  codigo_tipo_afectacion_igv_compra?: string | null;
+  stock: number;
+  stock_minimo?: number;
+  categoria_id?: string | null;
+  marca?: string | null;
+  descripcion?: string | null;
+  nombre_secundario?: string | null;
+  codigo_lote?: string | null;
+  fecha_vencimiento?: string | null;
+  codigo_barras?: string | null;
+}
+
+export interface ProductUpdate {
+  nombre?: string;
+  codigo_interno?: string | null;
+  modelo?: string | null;
+  codigo_sunat?: string | null;
+  codigo_tipo_unidad?: string | null;
+  codigo_tipo_moneda?: string | null;
+  precio_unitario_venta?: number;
+  codigo_tipo_afectacion_igv_venta?: string | null;
+  tiene_igv?: boolean;
+  precio_unitario_compra?: number;
+  codigo_tipo_afectacion_igv_compra?: string | null;
+  stock?: number;
+  stock_minimo?: number;
+  categoria_id?: string | null;
+  marca?: string | null;
+  descripcion?: string | null;
+  nombre_secundario?: string | null;
+  codigo_lote?: string | null;
+  fecha_vencimiento?: string | null;
+  codigo_barras?: string | null;
+}
+
+export interface ProductImageEntity {
+  id: string;
+  product_id: string;
+  image_url: string;
+  filename: string;
+  file_size: number | null;
+  mime_type: string | null;
+  display_order: number;
+  created_at: string;
+}
+
+export interface ProductImageInsert {
+  product_id: string;
+  image_url: string;
+  filename: string;
+  file_size?: number | null;
+  mime_type?: string | null;
+  display_order?: number;
+}
+
 export interface Product {
   id: string;
   nombre: string;
@@ -20,14 +136,8 @@ export interface Product {
   codigoLote: string;
   fechaVencimiento: string;
   codigoBarras: string;
-  imagenes: string[]; // Filenames
-  imageFiles?: File[]; // Actual files for preview
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  description?: string;
+  imagenes: string[];
+  imageFiles?: File[];
 }
 
 export const DEFAULT_CATEGORIES: Category[] = [
