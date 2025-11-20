@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { Component, computed, input, output } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
@@ -8,7 +8,7 @@ import { Product } from '../../models/inventory.model';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, HlmIconImports],
+  imports: [CommonModule, HlmIconImports, NgOptimizedImage],
   providers: [provideIcons({ lucideX })],
   template: `
     <div
@@ -37,21 +37,16 @@ import { Product } from '../../models/inventory.model';
             <div class="col-span-1 md:col-span-2 mb-4">
               <h3 class="text-lg font-semibold mb-3 text-primary">Imágenes</h3>
               <div class="flex gap-4 overflow-x-auto pb-2">
-                @if (product().imageFiles && product().imageFiles!.length > 0) {
-                  @for (file of
-                    product().imageFiles; track $index) {
+                @if (imageUrls().length > 0) {
+                  @for (item of imageUrls(); track $index) {
                     <div
                       class="relative group rounded-lg overflow-hidden border border-border w-48 h-48 flex-shrink-0 bg-secondary/10"
                     >
-                      <img
-                        [src]="getObjectUrl(file)"
-                        class="w-full h-full object-cover"
-                        alt="Product Image"
-                      />
+                      <img [ngSrc]="item.url" class="w-full h-full object-cover" alt="Product Image" fill/>
                       <div
                         class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs p-1 truncate text-center"
                       >
-                        {{ file.name }}
+                        {{ item.name }}
                       </div>
                     </div>
                   }
@@ -99,6 +94,15 @@ export class ProductDetailComponent {
 
   protected readonly closeIcon: any = 'lucideX';
 
+  // Computed signal to generate stable URLs for images
+  imageUrls = computed(() => {
+    const files = this.product().imageFiles || [];
+    return files.map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file),
+    }));
+  });
+
   fields = [
     { label: 'Nombre', key: 'nombre' },
     { label: 'Código Interno', key: 'codigoInterno' },
@@ -132,9 +136,5 @@ export class ProductDetailComponent {
       return val ? 'Sí' : 'No';
     }
     return val || '-';
-  }
-
-  getObjectUrl(file: File): string {
-    return URL.createObjectURL(file);
   }
 }
