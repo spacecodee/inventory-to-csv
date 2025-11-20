@@ -30,7 +30,8 @@ export class AiService {
         2. Determina si encaja en alguna de las categorías disponibles.
         3. SI NO ENCAJA en ninguna: Crea una NUEVA categoría corta y descriptiva.
         4. Genera una descripción comercial.
-        5. Determina el género (H, M, MIX, GEN).
+        5. Determina el género/tipo (H=Hombre, M=Mujer, MIX=Unisex, NA=No Aplica, GEN=Genérico).
+        6. La marca SIEMPRE debe ser "Genérica".
 
         Formato de respuesta JSON (sin markdown):
         {
@@ -38,7 +39,7 @@ export class AiService {
           "categoria": "Categoría existente o NUEVA",
           "esNuevaCategoria": boolean,
           "descripcion": "Descripción...",
-          "genero": "H/M/MIX/GEN"
+          "genero": "H/M/MIX/NA/GEN"
         }
       `;
 
@@ -54,23 +55,23 @@ export class AiService {
         this.categoryService.addCategory(data.categoria, 'Categoría generada por IA');
       }
 
-      const randomCode = Math.floor(10000 + Math.random() * 90000);
+      const randomCode = Math.floor(1000 + Math.random() * 9000); // 4 digits
 
       // Ensure gender is one of the expected values, otherwise default to GEN
-      let gender = (data.genero || 'GEN').toUpperCase();
-      if (!['H', 'M', 'MIX', 'GEN'].includes(gender)) {
-        gender = 'GEN';
+      let suffix = (data.genero || 'GEN').toUpperCase();
+      const validSuffixes = ['H', 'M', 'MIX', 'NA', 'GEN'];
+      if (!validSuffixes.includes(suffix)) {
+        suffix = 'GEN';
       }
 
-      const barcodePrefix = gender;
-      const barcode = `${ barcodePrefix }${ randomCode }`;
+      const barcode = `750000${ randomCode }-${ suffix }`;
 
       return {
         nombre: data.nombre,
         codigoInterno: `INT-${ randomCode }`,
         modelo: `MOD-${ randomCode }`,
         categoria: data.categoria,
-        marca: 'GENERICA',
+        marca: 'Genérica',
         descripcion: data.descripcion,
         nombreSecundario: `${ data.nombre } (Secundario)`,
         codigoBarras: barcode,

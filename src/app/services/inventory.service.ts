@@ -26,6 +26,14 @@ export class InventoryService {
     }
   }
 
+  updateProduct(updatedProduct: Product) {
+    this.productsSignal.update((products) => {
+      const newProducts = products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p));
+      this.saveToStorage(newProducts);
+      return newProducts;
+    });
+  }
+
   removeProduct(id: string) {
     this.productsSignal.update((products) => {
       const newProducts = products.filter((p) => p.id !== id);
