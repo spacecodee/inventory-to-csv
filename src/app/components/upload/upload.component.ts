@@ -6,6 +6,7 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { Product } from '../../models/inventory.model';
 import { AiService } from '../../services/ai.service';
 import { InventoryService } from '../../services/inventory.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-upload',
@@ -55,6 +56,7 @@ import { InventoryService } from '../../services/inventory.service';
 export class UploadComponent {
   private readonly aiService = inject(AiService);
   private readonly inventoryService = inject(InventoryService);
+  private readonly notification = inject(NotificationService);
 
   isProcessing = signal(false);
 
@@ -64,7 +66,6 @@ export class UploadComponent {
   onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
-    // Add visual feedback if needed
   }
 
   onDragLeave(event: DragEvent) {
@@ -91,17 +92,22 @@ export class UploadComponent {
   async processFiles(files: File[]) {
     if (files.length === 0) return;
 
-    // Limit to 2 files max per product as requested
     if (files.length > 2) {
-      alert('Por favor, sube máximo 2 imágenes por producto.');
+      this.notification.error(
+        'Máximo 2 imágenes',
+        'Por favor, sube máximo 2 imágenes por producto.'
+      );
       return;
     }
 
     this.isProcessing.set(true);
 
     try {
-      // Process all files as ONE product
-      const partialProduct = await this.aiService.analyzeProduct(files);
+      const partialProduct = await this.notification.promise(this.aiService.analyzeProduct(files), {
+        loading: 'Analizando imágenes con IA...',
+        success: '¡Producto detectado correctamente!',
+        error: 'Error al analizar las imágenes',
+      });
 
       const newProduct: Product = {
         ...(partialProduct as Product),
@@ -109,9 +115,17 @@ export class UploadComponent {
         imageFiles: files,
       };
 
-      this.inventoryService.addProduct(newProduct);
+      await this.inventoryService.addProduct(newProduct);
+      this.notification.success(
+        'Producto agregado',
+        'El producto se ha guardado exitosamente en la base de datos.'
+      );
     } catch (error) {
       console.error('Error processing files:', error);
+      this.notification.error(
+        'Error al procesar',
+        'Ocurrió un error al procesar el producto. Intenta de nuevo.'
+      );
     } finally {
       this.isProcessing.set(false);
     }
