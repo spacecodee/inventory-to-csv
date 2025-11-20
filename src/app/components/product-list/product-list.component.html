@@ -16,6 +16,16 @@
         </button>
 
         <button
+          (click)="downloadBarcodes()"
+          class="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center gap-2 shadow-sm"
+          [disabled]="paginatedProducts().length === 0"
+          title="Descargar códigos de barras de la página actual"
+        >
+          <ng-icon hlm name="lucideScanBarcode" size="sm"></ng-icon>
+          Descargar Códigos
+        </button>
+
+        <button
           (click)="downloadExcel()"
           class="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm"
           [disabled]="products().length === 0"

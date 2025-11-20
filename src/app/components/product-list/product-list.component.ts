@@ -6,6 +6,7 @@ import {
   lucideCheck,
   lucideDownload,
   lucideEye,
+  lucideScanBarcode,
   lucideSearch,
   lucideSettings2,
   lucideTrash2,
@@ -30,6 +31,7 @@ import { ProductDetailComponent } from './product-detail.component';
       lucideSearch,
       lucideSettings2,
       lucideCheck,
+      lucideScanBarcode,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -149,5 +151,83 @@ export class ProductListComponent {
 
   viewProduct(product: Product) {
     this.selectedProductId.set(product.id);
+  }
+
+  async downloadBarcodes() {
+    const products = this.paginatedProducts();
+    if (products.length === 0) return;
+
+    try {
+      const JSZip = (await import('jszip')).default;
+      const JsBarcode = (await import('jsbarcode')).default;
+      const zip = new JSZip();
+
+      const pageNumber = this.currentPage();
+      const folderName = `barcodes-page-${ pageNumber }`;
+      const folder = zip.folder(folderName);
+
+      if (!folder) return;
+
+      for (const product of products) {
+        if (!product.codigoBarras) continue;
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        JsBarcode(svg, String(product.codigoBarras), {
+          format: 'CODE128',
+          displayValue: true,
+          fontSize: 14,
+          height: 60,
+          width: 2,
+        });
+
+        const serializer = new XMLSerializer();
+        const svgString = serializer.serializeToString(svg);
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) continue;
+
+        const img = new Image();
+        const imgPromise = new Promise<void>((resolve, reject) => {
+          img.onload = () => {
+            canvas.width = img.width || 600;
+            canvas.height = img.height || 200;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            resolve();
+          };
+          img.onerror = reject;
+        });
+
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        img.src = url;
+
+        await imgPromise;
+        URL.revokeObjectURL(url);
+
+        const pngBlob = await new Promise<Blob | null>((resolve) => {
+          canvas.toBlob((b) => resolve(b), 'image/png');
+        });
+
+        if (pngBlob) {
+          const fileName = `${ product.codigoBarras }.png`;
+          folder.file(fileName, pngBlob);
+        }
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      const zipUrl = URL.createObjectURL(content);
+      a.href = zipUrl;
+      a.download = `${ folderName }.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(zipUrl);
+    } catch (error) {
+      console.error('Error generating barcodes:', error);
+    }
   }
 }
