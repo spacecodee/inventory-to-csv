@@ -32,14 +32,14 @@ import { InventoryService } from '../../services/inventory.service';
 
         @if (isProcessing()) {
           <div class="flex flex-col items-center justify-center gap-4">
-            <ng-icon hlm name="lucideLoader2" class="text-primary animate-spin" size="xl"></ng-icon>
+            <ng-icon hlm [name]="loaderIcon" class="text-primary animate-spin" size="xl"></ng-icon>
             <p class="text-lg font-medium text-foreground">Analizando imágenes con IA...</p>
             <p class="text-sm text-muted-foreground">Esto puede tomar unos segundos</p>
           </div>
         } @else {
           <div class="flex flex-col items-center justify-center gap-4">
             <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <ng-icon hlm name="lucideUploadCloud" class="text-primary" size="lg"></ng-icon>
+              <ng-icon hlm [name]="uploadIcon" class="text-primary" size="lg"></ng-icon>
             </div>
             <div>
               <h3 class="text-xl font-semibold text-foreground">Sube tus imágenes aquí</h3>
@@ -58,6 +58,9 @@ export class UploadComponent {
 
   isProcessing = signal(false);
 
+  protected readonly loaderIcon: any = 'lucideLoader2';
+  protected readonly uploadIcon: any = 'lucideUploadCloud';
+
   onDragOver(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -74,36 +77,39 @@ export class UploadComponent {
     event.stopPropagation();
     const files = event.dataTransfer?.files;
     if (files) {
-      this.processFiles(Array.from(files));
+      void this.processFiles(Array.from(files));
     }
   }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files) {
-      this.processFiles(Array.from(input.files));
+      void this.processFiles(Array.from(input.files));
     }
   }
 
   async processFiles(files: File[]) {
     if (files.length === 0) return;
 
+    // Limit to 2 files max per product as requested
+    if (files.length > 2) {
+      alert('Por favor, sube máximo 2 imágenes por producto.');
+      return;
+    }
+
     this.isProcessing.set(true);
 
     try {
-      // Process files in parallel or sequence depending on load.
-      // For now, let's do it one by one to simulate "thinking"
-      for (const file of files) {
-        const partialProduct = await this.aiService.analyzeImage(file);
+      // Process all files as ONE product
+      const partialProduct = await this.aiService.analyzeProduct(files);
 
-        const newProduct: Product = {
-          ...(partialProduct as Product),
-          id: crypto.randomUUID(),
-          imageFiles: [file],
-        };
+      const newProduct: Product = {
+        ...(partialProduct as Product),
+        id: crypto.randomUUID(),
+        imageFiles: files,
+      };
 
-        this.inventoryService.addProduct(newProduct);
-      }
+      this.inventoryService.addProduct(newProduct);
     } catch (error) {
       console.error('Error processing files:', error);
     } finally {

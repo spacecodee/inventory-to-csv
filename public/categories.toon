@@ -1,0 +1,12 @@
+context:
+  app: Inventory AI
+  updated: 2025-11-20
+categories[8]{id,name,description}:
+  1,Vehículos y Maquinaria,Autos RC | Drones | Aviones | Robots | Construcción
+  2,Juegos de Rol e Imitación,Cocinas | Batidoras | Sets de Picnic
+  3,Artículos de Fiesta,Árboles de Navidad | Adornos | Platos | Vasos
+  4,Juguetes Educativos,Instrumentos musicales | Bloques | Juguetes para bebés
+  5,Muñecas y Accesorios,Muñecas | Castillos | Autos de muñecas
+  6,Acción y Puntería,Pistolas lanza dardos | Pistolas de agua
+  7,Pistas y Garajes,Pistas de carreras | Estacionamientos
+  8,Accesorios y Varios,Estuches | Organizadores

@@ -12,34 +12,48 @@ export class AiService {
   private readonly genAI = new GoogleGenerativeAI(environment.googleGeminiApiKey);
   private readonly model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-  async analyzeImage(file: File): Promise<Partial<Product>> {
+  async analyzeProduct(files: File[]): Promise<Partial<Product>> {
     try {
-      const base64Data = await this.fileToGenerativePart(file);
+      const imagesParts = await Promise.all(files.map((f) => this.fileToGenerativePart(f)));
       const categories = this.categoryService.getCategoryNames();
 
       const prompt = `
-        Analiza esta imagen de un juguete o producto y extrae la siguiente información en formato JSON puro (sin markdown, sin \`\`\`json):
+        Analiza estas imágenes (${
+        files.length
+      } imágenes) que pertenecen a UN SOLO producto. Extrae la información en formato JSON puro.
 
-        Campos requeridos:
-        - nombre: Nombre corto y descriptivo del producto.
-        - categoria: Una de las siguientes categorías exactas: ${ categories.join(
-        ', '
-      ) }. Si no encaja, usa "Accesorios y Varios".
-        - descripcion: Descripción comercial atractiva (máx 20 palabras).
-        - genero: "H" (niño), "M" (niña), "MIX" (mixto) o "GEN" (genérico/adulto). Basado en colores y tipo de juguete.
+        Categorías Disponibles:
+        ${ categories.join(', ') }
 
-        Responde SOLO con el objeto JSON.
+        Instrucciones:
+        1. Identifica el producto.
+        2. Determina si encaja en alguna de las categorías disponibles.
+        3. SI NO ENCAJA en ninguna: Crea una NUEVA categoría corta y descriptiva.
+        4. Genera una descripción comercial.
+        5. Determina el género (H, M, MIX, GEN).
+
+        Formato de respuesta JSON (sin markdown):
+        {
+          "nombre": "Nombre del producto",
+          "categoria": "Categoría existente o NUEVA",
+          "esNuevaCategoria": boolean,
+          "descripcion": "Descripción...",
+          "genero": "H/M/MIX/GEN"
+        }
       `;
 
-      const result = await this.model.generateContent([prompt, base64Data]);
+      const result = await this.model.generateContent([prompt, ...imagesParts]);
       const response = result.response;
       const text = response.text();
 
-      // Clean up potential markdown code blocks if the model ignores the instruction
       const cleanJson = text.replaceAll('```json', '').replaceAll('```', '').trim();
       const data = JSON.parse(cleanJson);
 
-      // Generate codes based on AI data
+      // If AI suggests a new category, add it
+      if (data.esNuevaCategoria && data.categoria) {
+        this.categoryService.addCategory(data.categoria, 'Categoría generada por IA');
+      }
+
       const randomCode = Math.floor(10000 + Math.random() * 90000);
       const barcodePrefix = data.genero || 'GEN';
       const barcode = `${ barcodePrefix }${ randomCode }`;
@@ -53,7 +67,6 @@ export class AiService {
         descripcion: data.descripcion,
         nombreSecundario: `${ data.nombre } (Secundario)`,
         codigoBarras: barcode,
-        // Default values
         codigoSunat: '',
         codigoTipoUnidad: 'NIU',
         codigoTipoMoneda: 'PEN',
@@ -66,12 +79,11 @@ export class AiService {
         stockMinimo: 0,
         codigoLote: '',
         fechaVencimiento: '',
-        imagenes: [file.name],
+        imagenes: files.map((f) => f.name),
       };
     } catch (error) {
-      console.error('Error analyzing image with Gemini:', error);
-      // Fallback to random generation if AI fails (or API key is invalid)
-      return this.generateFallbackProduct(file);
+      console.error('Error analyzing product with Gemini:', error);
+      return this.generateFallbackProduct(files[0]);
     }
   }
 
