@@ -13,9 +13,9 @@ import { CategoryService } from '../../services/category.service';
   imports: [CommonModule, FormsModule, HlmIconImports],
   providers: [provideIcons({ lucideSettings2, lucideChevronUp, lucideChevronDown })],
   template: `
-    <div class="w-full h-full border border-border rounded-xl p-6 bg-card">
+    <div class="w-full h-full border border-border rounded-xl p-4 sm:p-6 bg-card">
       <div
-        class="flex justify-between items-center mb-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring rounded-lg"
+        class="flex justify-between items-center mb-3 sm:mb-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring rounded-lg"
         (click)="toggleExpanded()"
         (keydown.enter)="toggleExpanded()"
         (keydown.space)="toggleExpanded()"
@@ -23,9 +23,10 @@ import { CategoryService } from '../../services/category.service';
         role="button"
         [attr.aria-expanded]="expanded()"
       >
-        <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+        <h3 class="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
           <ng-icon hlm name="lucideSettings2" size="sm"></ng-icon>
-          Gestionar Categorías ({{ categories().length }})
+          <span class="hidden sm:inline">Gestionar Categorías ({{ categories().length }})</span>
+          <span class="sm:hidden">Categorías ({{ categories().length }})</span>
         </h3>
         <ng-icon
           hlm
@@ -37,16 +38,16 @@ import { CategoryService } from '../../services/category.service';
 
       @if (expanded()) {
         <div class="animate-in fade-in slide-in-from-top-2">
-          <div class="flex gap-4 mb-6">
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 sm:mb-6">
             <div class="flex-1">
-              <label class="block text-sm font-medium text-muted-foreground mb-1"
+              <label class="block text-xs sm:text-sm font-medium text-muted-foreground mb-1"
               >Nueva Categoría</label
               >
               <input
                 type="text"
                 [(ngModel)]="newCategoryName"
                 placeholder="Ej. Juegos de Mesa"
-                class="w-full px-3 py-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all"
+                class="w-full px-3 py-2 text-sm sm:text-base rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                 (keyup.enter)="addCategory()"
               />
             </div>
@@ -54,7 +55,7 @@ import { CategoryService } from '../../services/category.service';
               <button
                 (click)="addCategory()"
                 [disabled]="!newCategoryName.trim()"
-                class="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                class="w-full sm:w-auto px-4 py-2 rounded-lg text-sm sm:text-base bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Agregar
               </button>
@@ -62,11 +63,13 @@ import { CategoryService } from '../../services/category.service';
           </div>
 
           <div>
-            <h4 class="text-sm font-medium text-muted-foreground mb-3">Categorías Disponibles</h4>
-            <div class="flex flex-wrap gap-2">
+            <h4 class="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3">
+              Categorías Disponibles
+            </h4>
+            <div class="flex flex-wrap gap-1.5 sm:gap-2">
               @for (category of categories(); track category.id) {
                 <span
-                  class="px-3 py-1 rounded-full text-sm border transition-colors"
+                  class="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm border transition-colors"
                   [class]="
                 isDefault(category)
                   ? 'bg-secondary/50 text-secondary-foreground border-border'
@@ -81,7 +84,9 @@ import { CategoryService } from '../../services/category.service';
               }
             </div>
 
-            <div class="mt-4 flex gap-4 text-xs text-muted-foreground">
+            <div
+              class="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground"
+            >
               <div class="flex items-center gap-2">
                 <div class="w-3 h-3 rounded-full bg-secondary/50 border border-border"></div>
                 <span>Por defecto</span>

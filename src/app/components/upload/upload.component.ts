@@ -16,7 +16,7 @@ import { NotificationService } from '../../services/notification.service';
   template: `
     <div class="w-full h-full">
       <div
-        class="border-2 border-dashed border-primary/30 rounded-xl p-10 text-center hover:bg-secondary/20 transition-colors cursor-pointer relative h-full flex flex-col justify-center"
+        class="border-2 border-dashed border-primary/30 rounded-xl p-6 sm:p-10 text-center hover:bg-secondary/20 transition-colors cursor-pointer relative min-h-[200px] sm:min-h-[250px] flex flex-col justify-center"
         (dragover)="onDragOver($event)"
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
@@ -32,19 +32,37 @@ import { NotificationService } from '../../services/notification.service';
         />
 
         @if (isProcessing()) {
-          <div class="flex flex-col items-center justify-center gap-4">
-            <ng-icon hlm [name]="loaderIcon" class="text-primary animate-spin" size="xl"></ng-icon>
-            <p class="text-lg font-medium text-foreground">Analizando imágenes con IA...</p>
-            <p class="text-sm text-muted-foreground">Esto puede tomar unos segundos</p>
+          <div class="flex flex-col items-center justify-center gap-3 sm:gap-4">
+            <ng-icon
+              hlm
+              [name]="loaderIcon"
+              class="text-primary animate-spin"
+              size="lg"
+              class="sm:text-4xl"
+            ></ng-icon>
+            <p class="text-base sm:text-lg font-medium text-foreground">
+              Analizando imágenes con IA...
+            </p>
+            <p class="text-xs sm:text-sm text-muted-foreground">Esto puede tomar unos segundos</p>
           </div>
         } @else {
-          <div class="flex flex-col items-center justify-center gap-4">
-            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <ng-icon hlm [name]="uploadIcon" class="text-primary" size="lg"></ng-icon>
+          <div class="flex flex-col items-center justify-center gap-3 sm:gap-4">
+            <div
+              class="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center"
+            >
+              <ng-icon
+                hlm
+                [name]="uploadIcon"
+                class="text-primary"
+                size="sm"
+                class="sm:text-2xl"
+              ></ng-icon>
             </div>
             <div>
-              <h3 class="text-xl font-semibold text-foreground">Sube tus imágenes aquí</h3>
-              <p class="text-muted-foreground mt-1">Arrastra y suelta o haz clic para seleccionar</p>
+              <h3 class="text-lg sm:text-xl font-semibold text-foreground">Sube tus imágenes aquí</h3>
+              <p class="text-sm sm:text-base text-muted-foreground mt-1">
+                Arrastra y suelta o haz clic para seleccionar
+              </p>
             </div>
             <p class="text-xs text-muted-foreground/70">Soporta JPG, PNG, WEBP</p>
           </div>
