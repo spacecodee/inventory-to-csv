@@ -1,67 +1,77 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { Category } from '../models/inventory.model';
-import { ToonService } from './toon.service';
+import { Category, CategoryEntity, CategoryInsert } from '../models/inventory.model';
+import { SupabaseService } from './supabase.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CategoryService {
-  private readonly toonService = inject(ToonService);
-  private readonly http = inject(HttpClient);
+  private readonly supabase = inject(SupabaseService);
 
   private readonly categoriesSignal = signal<Category[]>([]);
   readonly categories = this.categoriesSignal.asReadonly();
 
   constructor() {
-    this.loadInitialCategories();
+    this.initializeCategories();
   }
 
-  private loadInitialCategories() {
-    // Try to load from localStorage first to persist user changes
-    const storedToon = localStorage.getItem('categories.toon');
+  private initializeCategories(): void {
+    this.loadCategories().catch((error) => {
+      console.error('Failed to initialize categories:', error);
+    });
+  }
 
-    if (storedToon) {
-      const parsed = this.toonService.parseCategories(storedToon);
-      this.categoriesSignal.set(parsed);
-    } else {
-      // Load from static file
-      this.http.get('categories.toon', { responseType: 'text' }).subscribe({
-        next: (content) => {
-          const parsed = this.toonService.parseCategories(content);
-          this.categoriesSignal.set(parsed);
-          // Save to local storage for future persistence
-          this.saveToLocal(parsed);
-        },
-        error: (err) => console.error('Failed to load categories.toon', err),
-      });
+  private async loadCategories(): Promise<void> {
+    const { data, error } = await this.supabase.client
+    .from('categories')
+    .select('*')
+    .order('name', { ascending: true });
+
+    if (error) {
+      console.error('Error loading categories:', error);
+      throw error;
     }
+
+    const categories = data.map((entity: CategoryEntity) => this.mapEntityToCategory(entity));
+    this.categoriesSignal.set(categories);
   }
 
-  addCategory(name: string, description: string = '') {
+  async addCategory(name: string, description: string = ''): Promise<void> {
     const currentCats = this.categoriesSignal();
-    // Check if exists
+
     if (currentCats.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
       return;
     }
 
-    const newCategory: Category = {
-      id: crypto.randomUUID(),
+    const categoryInsert: CategoryInsert = {
       name,
-      description,
+      description: description || null,
     };
 
-    const updatedCats = [...currentCats, newCategory];
-    this.categoriesSignal.set(updatedCats);
-    this.saveToLocal(updatedCats);
+    const { data, error } = await this.supabase.client
+    .from('categories')
+    .insert(categoryInsert)
+    .select()
+    .single();
+
+    if (error) {
+      console.error('Error adding category:', error);
+      return;
+    }
+
+    const newCategory = this.mapEntityToCategory(data as CategoryEntity);
+    this.categoriesSignal.update((cats) => [...cats, newCategory]);
   }
 
   getCategoryNames(): string[] {
     return this.categoriesSignal().map((c) => c.name);
   }
 
-  private saveToLocal(categories: Category[]) {
-    const toonContent = this.toonService.generateToon(categories);
-    localStorage.setItem('categories.toon', toonContent);
+  private mapEntityToCategory(entity: CategoryEntity): Category {
+    return {
+      id: entity.id,
+      name: entity.name,
+      description: entity.description || undefined,
+    };
   }
 }
