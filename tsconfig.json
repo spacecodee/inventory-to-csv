@@ -15,6 +15,12 @@
     "paths": {
       "@spartan-ng/helm/typography": [
         "./libs/ui/typography/src/index.ts"
+      ],
+      "@spartan-ng/helm/icon": [
+        "./libs/ui/icon/src/index.ts"
+      ],
+      "@spartan-ng/helm/utils": [
+        "./libs/ui/utils/src/index.ts"
       ]
     }
   },
