@@ -15,7 +15,13 @@ ARG GOOGLE_GEMINI_API_KEY
 ARG SUPABASE_URL
 ARG SUPABASE_ANON_KEY
 
-RUN chmod +x generate-env.sh && ./generate-env.sh
+RUN test -n "$GOOGLE_GEMINI_API_KEY" || (echo "ERROR: GOOGLE_GEMINI_API_KEY build argument is required" && exit 1)
+RUN test -n "$SUPABASE_URL" || (echo "ERROR: SUPABASE_URL build argument is required" && exit 1)
+RUN test -n "$SUPABASE_ANON_KEY" || (echo "ERROR: SUPABASE_ANON_KEY build argument is required" && exit 1)
+
+RUN sed -i "s|__GOOGLE_GEMINI_API_KEY_PLACEHOLDER__|${GOOGLE_GEMINI_API_KEY}|g" src/environments/environment.prod.ts && \
+    sed -i "s|__SUPABASE_URL_PLACEHOLDER__|${SUPABASE_URL}|g" src/environments/environment.prod.ts && \
+    sed -i "s|__SUPABASE_ANON_KEY_PLACEHOLDER__|${SUPABASE_ANON_KEY}|g" src/environments/environment.prod.ts
 
 RUN pnpm run build --configuration=production
 
