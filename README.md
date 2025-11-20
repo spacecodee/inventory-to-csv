@@ -132,27 +132,27 @@ pnpm install
 
 3. Configure Supabase:
 
-  - Create a project at [supabase.com](https://supabase.com)
-  - Execute `supabase-schema.sql` in SQL Editor to create database schema
-  - Create a `product-images` storage bucket (public)
-  - Configure environment variables:
+- Create a project at [supabase.com](https://supabase.com)
+- Execute `supabase-schema.sql` in SQL Editor to create database schema
+- Create a `product-images` storage bucket (public)
+- Configure environment variables:
 
-   ```typescript
-   export const environment = {
-     production: false,
-     googleGeminiApiKey: 'YOUR_GEMINI_API_KEY',
-     supabase: {
-       url: 'https://your-project.supabase.co',
-       anonKey: 'your-anon-key',
-     },
-   };
-   ```
+```typescript
+export const environment = {
+  production: false,
+  googleGeminiApiKey: 'YOUR_GEMINI_API_KEY',
+  supabase: {
+    url: 'https://your-project.supabase.co',
+    anonKey: 'your-anon-key',
+  },
+};
+```
 
 4. Enable Email Authentication in Supabase:
 
-  - Go to Authentication → Providers
-  - Enable "Email"
-  - (Optional) Disable "Email Confirmations" for development
+- Go to Authentication → Providers
+- Enable "Email"
+- (Optional) Disable "Email Confirmations" for development
 
 5. Start the development server:
 
@@ -302,6 +302,40 @@ pnpm build
 
 # Build artifacts will be generated in dist/
 ```
+
+## 🚀 Production Deployment
+
+This project is configured for automatic deployment using **Docker** and **GitHub Actions**.
+
+### Deploy with Dokploy
+
+For complete configuration and deployment instructions, check out the dedicated guide:
+
+📖 **[See Deployment Guide (DEPLOYMENT.md)](docs/DEPLOYMENT.md)**
+
+### Quick summary
+
+1. **Docker**: Multi-stage Dockerfile with Nginx
+2. **CI/CD**: Automatic GitHub Actions on push to `main`
+3. **Registry**: GitHub Container Registry (GHCR)
+4. **Deploy**: Automatic webhook to Dokploy
+5. **Variables**: Configured in GitHub Secrets (build-time injection)
+
+### Local testing
+
+```bash
+# Build with your credentials directly
+docker build -t inventory-to-csv:local \
+  --build-arg GOOGLE_GEMINI_API_KEY="your_key" \
+  --build-arg SUPABASE_URL="your_url" \
+  --build-arg SUPABASE_ANON_KEY="your_key" \
+  .
+
+# Run
+docker run -p 8080:80 inventory-to-csv:local
+```
+
+Access at: `http://localhost:8080`
 
 ## 📝 Code Conventions
 
