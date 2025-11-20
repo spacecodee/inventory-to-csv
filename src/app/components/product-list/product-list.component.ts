@@ -1,16 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
-import { lucideDownload, lucideTrash2, lucideX } from '@ng-icons/lucide';
+import { lucideDownload, lucideEye, lucideTrash2, lucideX } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
+import { Product } from '../../models/inventory.model';
 import { ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
+import { ProductDetailComponent } from './product-detail.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, HlmIconImports],
-  providers: [provideIcons({ lucideTrash2, lucideDownload, lucideX })],
+  imports: [CommonModule, HlmIconImports, ProductDetailComponent],
+  providers: [provideIcons({ lucideTrash2, lucideDownload, lucideX, lucideEye })],
   template: `
     <div class="w-full max-w-7xl mx-auto p-6">
       <div class="flex justify-between items-center mb-6">
@@ -80,12 +82,22 @@ import { InventoryService } from '../../services/inventory.service';
                   <td class="px-6 py-4 text-muted-foreground">{{ product.codigoInterno }}</td>
                   <td class="px-6 py-4 font-mono text-xs">{{ product.codigoBarras }}</td>
                   <td class="px-6 py-4">
-                    <button
-                      (click)="removeProduct(product.id)"
-                      class="text-destructive hover:text-destructive/80 transition-colors"
-                    >
-                      <ng-icon hlm name="lucideX" size="sm"></ng-icon>
-                    </button>
+                    <div class="flex gap-2">
+                      <button
+                        (click)="viewProduct(product)"
+                        class="text-primary hover:text-primary/80 transition-colors"
+                        title="Ver Detalle"
+                      >
+                        <ng-icon hlm name="lucideEye" size="sm"></ng-icon>
+                      </button>
+                      <button
+                        (click)="removeProduct(product.id)"
+                        class="text-destructive hover:text-destructive/80 transition-colors"
+                        title="Eliminar"
+                      >
+                        <ng-icon hlm name="lucideX" size="sm"></ng-icon>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -94,6 +106,13 @@ import { InventoryService } from '../../services/inventory.service';
         </div>
       }
     </div>
+
+    @if (selectedProduct()) {
+      <app-product-detail
+        [product]="selectedProduct()!"
+        (closeModal)="selectedProduct.set(null)"
+      ></app-product-detail>
+    }
   `,
 })
 export class ProductListComponent {
@@ -101,6 +120,7 @@ export class ProductListComponent {
   private readonly excelService = inject(ExcelService);
 
   products = this.inventoryService.products;
+  selectedProduct = signal<Product | null>(null);
 
   removeProduct(id: string) {
     this.inventoryService.removeProduct(id);
@@ -112,5 +132,9 @@ export class ProductListComponent {
 
   downloadExcel() {
     this.excelService.exportToExcel(this.products());
+  }
+
+  viewProduct(product: Product) {
+    this.selectedProduct.set(product);
   }
 }

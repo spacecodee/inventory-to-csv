@@ -10,7 +10,7 @@ import { CategoryService } from './category.service';
 export class AiService {
   private readonly categoryService = inject(CategoryService);
   private readonly genAI = new GoogleGenerativeAI(environment.googleGeminiApiKey);
-  private readonly model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+  private readonly model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
   async analyzeProduct(files: File[]): Promise<Partial<Product>> {
     try {
@@ -55,7 +55,14 @@ export class AiService {
       }
 
       const randomCode = Math.floor(10000 + Math.random() * 90000);
-      const barcodePrefix = data.genero || 'GEN';
+
+      // Ensure gender is one of the expected values, otherwise default to GEN
+      let gender = (data.genero || 'GEN').toUpperCase();
+      if (!['H', 'M', 'MIX', 'GEN'].includes(gender)) {
+        gender = 'GEN';
+      }
+
+      const barcodePrefix = gender;
       const barcode = `${ barcodePrefix }${ randomCode }`;
 
       return {

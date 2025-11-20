@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
 import { lucideChevronDown, lucideChevronUp, lucideSettings2 } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
+import { Category, DEFAULT_CATEGORIES } from '../../models/inventory.model';
 import { CategoryService } from '../../services/category.service';
 
 @Component({
@@ -16,7 +17,7 @@ import { CategoryService } from '../../services/category.service';
       <div class="flex justify-between items-center mb-4 cursor-pointer" (click)="toggleExpanded()">
         <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
           <ng-icon hlm name="lucideSettings2" size="sm"></ng-icon>
-          Gestionar Categorías
+          Gestionar Categorías ({{ categories().length }})
         </h3>
         <ng-icon
           hlm
@@ -59,11 +60,30 @@ import { CategoryService } from '../../services/category.service';
             <div class="flex flex-wrap gap-2">
               @for (category of categories(); track category.id) {
                 <span
-                  class="px-3 py-1 rounded-full bg-secondary/50 text-secondary-foreground text-sm border border-border"
+                  class="px-3 py-1 rounded-full text-sm border transition-colors"
+                  [class]="
+                isDefault(category)
+                  ? 'bg-secondary/50 text-secondary-foreground border-border'
+                  : 'bg-primary/10 text-primary border-primary/20'
+              "
+                  [title]="
+                isDefault(category) ? 'Categoría por defecto' : 'Categoría generada por IA/Usuario'
+              "
                 >
               {{ category.name }}
             </span>
               }
+            </div>
+
+            <div class="mt-4 flex gap-4 text-xs text-muted-foreground">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-secondary/50 border border-border"></div>
+                <span>Por defecto</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-primary/10 border border-primary/20"></div>
+                <span>Generada por IA</span>
+              </div>
             </div>
           </div>
         </div>
@@ -87,5 +107,9 @@ export class CategoryManagerComponent {
       this.categoryService.addCategory(this.newCategoryName.trim());
       this.newCategoryName = '';
     }
+  }
+
+  isDefault(category: Category): boolean {
+    return DEFAULT_CATEGORIES.some((c) => c.id === category.id);
   }
 }
