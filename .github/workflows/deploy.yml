@@ -67,5 +67,7 @@ jobs:
           IMAGE_TAG="main-$(echo ${{ github.sha }} | cut -c1-7)"
           curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"image\": \"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}\"}"
+            -d "{
+              \"image\": \"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}\"
+            }"
           echo "Triggered deployment with image tag: ${IMAGE_TAG}"
