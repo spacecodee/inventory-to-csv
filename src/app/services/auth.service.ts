@@ -13,21 +13,39 @@ export class AuthService {
   private readonly userSignal = signal<User | null>(null);
   private readonly sessionSignal = signal<Session | null>(null);
   private readonly loadingSignal = signal<boolean>(true);
+  private authInitialized = false;
+  private authInitPromise: Promise<void> | null = null;
 
   readonly user = this.userSignal.asReadonly();
-  readonly session = this.sessionSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
 
   constructor() {
-    this.initializeAuth();
+    this.initialize();
+  }
+
+  private initialize(): void {
+    this.authInitPromise = this.initializeAuth();
     this.setupAuthStateListener();
   }
 
-  private initializeAuth(): void {
-    this.restoreSession().catch((error) => {
+  private async initializeAuth(): Promise<void> {
+    try {
+      await this.restoreSession();
+      this.authInitialized = true;
+    } catch (error) {
       console.error('Failed to initialize auth:', error);
       this.loadingSignal.set(false);
-    });
+      this.authInitialized = true;
+    }
+  }
+
+  async waitForAuthInit(): Promise<void> {
+    if (this.authInitialized) {
+      return;
+    }
+    if (this.authInitPromise) {
+      await this.authInitPromise;
+    }
   }
 
   private setupAuthStateListener(): void {
