@@ -1,8 +1,16 @@
 # Inventory To CSV - AI-Powered Inventory Management System
 
-A modern inventory processing and management system that uses **Google Gemini AI** to extract product information from images. Built with Angular 21 and styled with TailwindCSS 4.
+A modern inventory processing and management system that uses **Google Gemini AI** to extract product information from images. Built with Angular 21, Supabase for backend services, and styled with TailwindCSS 4.
 
 ## 🚀 Key Features
+
+### 🔐 Authentication & Security
+
+- **Supabase Authentication** with email/password
+- User session persistence across browser sessions
+- Row Level Security (RLS) policies for data protection
+- Automatic token refresh and session restoration
+- Protected routes with authentication guards
 
 ### 📸 Intelligent AI Processing
 
@@ -12,12 +20,22 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - Automatic barcode generation in format `750000[RANDOM]-[SUFFIX]`
 - Assignment of "Generic" brand when no brand is detected
 
-### 💾 Data Persistence
+### 💾 Data Persistence with Supabase
 
-- **IndexedDB** for persistent local storage
-- Automatic saving of images and processed products
-- Data persists across browser sessions
-- Automatic image retrieval from local storage
+- **PostgreSQL database** with Supabase backend
+- **Tables**: `categories`, `products`, `product_images`
+- **Supabase Storage** for image files (optimized WebP format)
+- Row Level Security policies for authenticated users
+- Automatic updated_at timestamps with triggers
+- Foreign key relationships for data integrity
+
+### 🖼️ Image Optimization
+
+- **Automatic WebP conversion** for all uploads
+- **Smart compression** with quality 0.8
+- **Auto-resizing** to max 1920x1440 while maintaining aspect ratio
+- **Significant storage savings** (25-35% reduction vs JPG)
+- Metadata tracking (file size, MIME type, display order)
 
 ### 📊 Product Management
 
@@ -27,13 +45,14 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - **Product editing** (except images)
 - Instant data updates with Angular Signals
 - Detailed product view in modal
+- Direct integration with Supabase database
 
 ### 🏷️ Category Management
 
-- System of predefined and custom categories
+- Categories loaded directly from Supabase database
 - Dynamic creation of new categories
-- Visual distinction between default and AI-generated categories
-- Collapsible panel for efficient space management
+- System of predefined categories
+- Real-time synchronization with database
 
 ### 📦 Barcode Management
 
@@ -53,28 +72,48 @@ A modern inventory processing and management system that uses **Google Gemini AI
 
 - Modern design with **TailwindCSS 4**
 - UI components based on **Spartan Helm**
-- Responsive layout with grid design
-- Dark/light mode according to system configuration
+- **Dark/Light mode** toggle with theme persistence
+- Responsive layout optimized for mobile and desktop
+- **Toast notifications** with Sonner for user feedback
 - Smooth animations and transitions
+- Mobile-first responsive design
+
+### 🔔 User Feedback
+
+- **Toast notifications** using Sonner
+- Real-time feedback on:
+  - AI image analysis progress
+  - Product upload success/failure
+  - Error messages with descriptions
+  - Loading states during operations
+- Position: top-right with auto-dismiss
+- Rich colors matching theme (light/dark mode)
 
 ## 🛠️ Technologies Used
 
 - **Angular 21** - Main framework
 - **TypeScript 5.9** - Programming language
 - **TailwindCSS 4** - Styling framework
+- **Supabase** - Backend, authentication, and storage
+- **PostgreSQL** - Database via Supabase
 - **Google Gemini AI** - AI image processing
-- **IndexedDB (idb)** - Local data persistence
+- **WebP Optimization** - Image compression
 - **JsBarcode** - Barcode generation
 - **JSZip** - ZIP file creation
 - **XLSX** - Excel file generation
 - **Spartan NG** - Primitive UI components
 - **ng-icons** - Iconography (Lucide Icons)
+- **Sonner** - Toast notifications
 
 ## 📋 Prerequisites
 
 - **Node.js** (version 18 or higher)
 - **pnpm** 10.22.0 (package manager)
 - **Google Gemini API Key** (configure in `src/environments/environment.ts`)
+- **Supabase Project** with:
+  - Authentication enabled (Email provider)
+  - PostgreSQL database
+  - Storage bucket for images
 
 ## 🔧 Installation
 
@@ -91,63 +130,89 @@ cd inventory-to-csv
 pnpm install
 ```
 
-3. Configure environment variables:
+3. Configure Supabase:
 
-  - Copy `src/environments/environment.ts`
-  - Add your Google Gemini API Key:
+  - Create a project at [supabase.com](https://supabase.com)
+  - Execute `supabase-schema.sql` in SQL Editor to create database schema
+  - Create a `product-images` storage bucket (public)
+  - Configure environment variables:
 
    ```typescript
    export const environment = {
      production: false,
-     geminiApiKey: 'YOUR_API_KEY_HERE',
+     googleGeminiApiKey: 'YOUR_GEMINI_API_KEY',
+     supabase: {
+       url: 'https://your-project.supabase.co',
+       anonKey: 'your-anon-key',
+     },
    };
    ```
 
-4. Start the development server:
+4. Enable Email Authentication in Supabase:
+
+  - Go to Authentication → Providers
+  - Enable "Email"
+  - (Optional) Disable "Email Confirmations" for development
+
+5. Start the development server:
 
 ```bash
 pnpm start
 ```
 
-5. Open your browser at `http://localhost:4200`
+6. Open your browser at `http://localhost:4200`
 
 ## 📖 Usage Guide
 
-### 1. Upload Images
+### 1. Authentication
+
+- **Sign up**: Create a new account with email and password
+- **Sign in**: Use your credentials to access the app
+- Session persists across browser sessions
+- Click "Cerrar Sesión" to logout
+
+### 2. Upload Images
 
 - Drag and drop or select up to **2 images** of a product
 - Supported formats: JPG, PNG, WEBP
-- The system will automatically process the images with AI
+- Images are automatically optimized to WebP format
+- Toast notifications show progress and results
+- The system processes images with AI
 
-### 2. Manage Categories
+### 3. Manage Categories
 
 - Click on "Manage Categories" to expand the panel
 - Add new custom categories as needed
-- Categories are automatically saved
+- Categories sync with Supabase database in real-time
 
-### 3. View Products
+### 4. View Products
 
-- The table displays all processed products
+- The table displays all processed products from database
 - Use the **search bar** to filter products
 - Configure **visible columns** with the "Columns" button
 - Adjust **pagination** according to your needs
 
-### 4. Edit Products
+### 5. Edit Products
 
 - Click the "eye" icon to view details
 - Click "Edit" to modify fields
 - **Images are not editable** by design
-- Changes are saved instantly
+- Changes are saved to database instantly
 
-### 5. Download Barcodes
+### 6. Dark/Light Mode
+
+- Click the sun/moon icon in the header to toggle theme
+- Theme preference is saved locally
+
+### 7. Download Barcodes
 
 - **Individual**: From the product detail, click "Download barcode"
 - **Bulk**: In the list, click "Download Codes" to get a ZIP with all barcodes from the current page
 
-### 6. Export to Excel
+### 8. Export to Excel
 
 - Click "Download Excel" to export all products
-- The file includes all columns and processed data
+- The file includes all columns and data from database
 
 ## 🏗️ Project Structure
 
@@ -156,30 +221,68 @@ src/
 ├── app/
 │   ├── components/
 │   │   ├── category-manager/     # Category management
+│   │   ├── dashboard/            # Main dashboard (protected)
+│   │   ├── login/                # Authentication UI
 │   │   ├── product-list/         # Product list and detail
 │   │   └── upload/               # Image upload and processing
+│   ├── guards/
+│   │   └── auth.guard.ts         # Route protection
 │   ├── models/
-│   │   └── inventory.model.ts    # Data models
+│   │   └── inventory.model.ts    # Data models and entities
 │   ├── services/
 │   │   ├── ai.service.ts         # Gemini AI integration
+│   │   ├── auth.service.ts       # Authentication
 │   │   ├── category.service.ts   # Category management
 │   │   ├── excel.service.ts      # Excel export
-│   │   ├── image-persistence.service.ts  # Image persistence
+│   │   ├── image-optimization.service.ts  # WebP optimization
 │   │   ├── inventory.service.ts  # Product management
+│   │   ├── notification.service.ts # Toast notifications
+│   │   ├── supabase.service.ts   # Supabase client
+│   │   ├── theme.service.ts      # Dark/light mode
 │   │   └── toon.service.ts       # File utilities
+│   ├── app.routes.ts             # Route configuration
+│   ├── app.config.ts             # App configuration
 │   └── environments/             # Environment configuration
 ├── libs/ui/                      # Reusable UI components
 └── public/                       # Static files
 ```
 
+## 🗄️ Database Schema
+
+### Categories Table
+
+- `id` (UUID) - Primary key
+- `name` (VARCHAR) - Category name (unique)
+- `description` (TEXT) - Optional description
+- `created_at`, `updated_at` - Timestamps
+
+### Products Table
+
+- `id` (UUID) - Primary key
+- Complete product fields (nombre, precio, stock, etc.)
+- `categoria_id` (UUID) - Foreign key to categories
+- `created_at`, `updated_at` - Timestamps
+
+### Product Images Table
+
+- `id` (UUID) - Primary key
+- `product_id` (UUID) - Foreign key to products
+- `image_url` (TEXT) - Path in Supabase Storage
+- `filename`, `file_size`, `mime_type` - Image metadata
+- `display_order` - Image order
+
 ## 🔒 Security and Best Practices
 
-- ✅ Environment variables for sensitive API Keys
+- ✅ Supabase Authentication for user management
+- ✅ Row Level Security policies for data protection
+- ✅ Environment variables for sensitive API keys
 - ✅ Form validation with Angular Reactive Forms
 - ✅ User input sanitization
-- ✅ SonarQube compliance
+- ✅ SonarQube compliance with code quality standards
 - ✅ Web accessibility (a11y) with ARIA roles and keyboard navigation
 - ✅ Semantic HTML and native `<dialog>` elements
+- ✅ Session persistence with token refresh
+- ✅ Immutable search_path for database functions
 
 ## 🧪 Testing
 
@@ -208,6 +311,7 @@ pnpm build
 - **Styling**: TailwindCSS only (no custom CSS)
 - **Components**: Standalone (no NgModules)
 - **Change Detection**: `OnPush` in all components
+- **Async Operations**: Outside constructors following S7059 rule
 
 ## 🤝 Contributing
 
@@ -232,6 +336,8 @@ This project is under private license.
 ## 🙏 Acknowledgments
 
 - Google Gemini AI for intelligent image processing
+- Supabase for backend infrastructure
 - Angular Team for the excellent framework
 - Spartan NG for primitive UI components
 - Lucide Icons for iconography
+- Sonner for toast notifications
