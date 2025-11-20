@@ -1,28 +1,46 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
-import { lucideBox } from '@ng-icons/lucide';
+import { lucideBox, lucideLogOut } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { CategoryManagerComponent } from './components/category-manager/category-manager.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
 import { UploadComponent } from './components/upload/upload.component';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [UploadComponent, ProductListComponent, CategoryManagerComponent, HlmIconImports],
-  providers: [provideIcons({ lucideBox })],
+  providers: [provideIcons({ lucideBox, lucideLogOut })],
   template: `
     <div class="min-h-screen bg-background font-sans text-foreground flex flex-col">
       <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center gap-3">
-          <div
-            class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shadow-sm"
-          >
-            <ng-icon hlm name="lucideBox" size="lg"></ng-icon>
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground shadow-sm"
+            >
+              <ng-icon hlm name="lucideBox" size="lg"></ng-icon>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold tracking-tight">Inventory AI</h1>
+              <p class="text-xs text-muted-foreground">Sistema de Catalogación Inteligente</p>
+            </div>
           </div>
-          <div>
-            <h1 class="text-xl font-bold tracking-tight">Inventory AI</h1>
-            <p class="text-xs text-muted-foreground">Sistema de Catalogación Inteligente</p>
+
+          <div class="flex items-center gap-4">
+            @if (authService.user(); as user) {
+              <div class="text-right">
+                <p class="text-sm font-medium text-gray-900">{{ user.email }}</p>
+                <p class="text-xs text-muted-foreground">Usuario activo</p>
+              </div>
+            }
+            <button
+              (click)="onLogout()"
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <ng-icon hlm name="lucideLogOut" size="sm"></ng-icon>
+              <span>Cerrar Sesión</span>
+            </button>
           </div>
         </div>
       </header>
@@ -48,6 +66,12 @@ import { UploadComponent } from './components/upload/upload.component';
   `,
 })
 export class App {
+  protected readonly authService = inject(AuthService);
+
   protected readonly title = signal('inventory-to-csv');
   protected readonly currentYear = new Date().getFullYear();
+
+  protected async onLogout(): Promise<void> {
+    await this.authService.signOut();
+  }
 }
