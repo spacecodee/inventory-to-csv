@@ -28,8 +28,14 @@ import { UploadComponent } from './components/upload/upload.component';
       </header>
 
       <main class="flex-1 py-8">
-        <app-upload/>
-        <app-category-manager/>
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div class="lg:col-span-2">
+            <app-upload/>
+          </div>
+          <div class="lg:col-span-1">
+            <app-category-manager/>
+          </div>
+        </div>
         <app-product-list/>
       </main>
 

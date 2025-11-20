@@ -13,8 +13,16 @@ import { CategoryService } from '../../services/category.service';
   imports: [CommonModule, FormsModule, HlmIconImports],
   providers: [provideIcons({ lucideSettings2, lucideChevronUp, lucideChevronDown })],
   template: `
-    <div class="w-full max-w-2xl mx-auto p-6 mt-8 border-t border-border">
-      <div class="flex justify-between items-center mb-4 cursor-pointer" (click)="toggleExpanded()">
+    <div class="w-full h-full border border-border rounded-xl p-6 bg-card">
+      <div
+        class="flex justify-between items-center mb-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring rounded-lg"
+        (click)="toggleExpanded()"
+        (keydown.enter)="toggleExpanded()"
+        (keydown.space)="toggleExpanded()"
+        tabindex="0"
+        role="button"
+        [attr.aria-expanded]="expanded()"
+      >
         <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
           <ng-icon hlm name="lucideSettings2" size="sm"></ng-icon>
           Gestionar Categorías ({{ categories().length }})
@@ -28,9 +36,7 @@ import { CategoryService } from '../../services/category.service';
       </div>
 
       @if (expanded()) {
-        <div
-          class="bg-card rounded-xl border border-border p-6 shadow-sm animate-in fade-in slide-in-from-top-2"
-        >
+        <div class="animate-in fade-in slide-in-from-top-2">
           <div class="flex gap-4 mb-6">
             <div class="flex-1">
               <label class="block text-sm font-medium text-muted-foreground mb-1"

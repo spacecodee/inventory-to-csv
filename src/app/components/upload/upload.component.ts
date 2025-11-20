@@ -13,9 +13,9 @@ import { InventoryService } from '../../services/inventory.service';
   imports: [CommonModule, HlmIconImports],
   providers: [provideIcons({ lucideUploadCloud, lucideLoader2 })],
   template: `
-    <div class="w-full max-w-2xl mx-auto p-6">
+    <div class="w-full h-full">
       <div
-        class="border-2 border-dashed border-primary/30 rounded-xl p-10 text-center hover:bg-secondary/20 transition-colors cursor-pointer relative"
+        class="border-2 border-dashed border-primary/30 rounded-xl p-10 text-center hover:bg-secondary/20 transition-colors cursor-pointer relative h-full flex flex-col justify-center"
         (dragover)="onDragOver($event)"
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
