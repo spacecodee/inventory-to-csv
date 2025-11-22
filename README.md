@@ -92,7 +92,7 @@ A modern inventory processing and management system that uses **Google Gemini AI
 ## 🛠️ Technologies Used
 
 - **Angular 21** - Main framework
-- **TypeScript 5.9** - Programming language
+- **TypeScript** - Programming language
 - **TailwindCSS 4** - Styling framework
 - **Supabase** - Backend, authentication, and storage
 - **PostgreSQL** - Database via Supabase
@@ -103,11 +103,10 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - **XLSX** - Excel file generation
 - **Spartan NG** - Primitive UI components
 - **ng-icons** - Iconography (Lucide Icons)
-- **Sonner** - Toast notifications
 
 ## 📋 Prerequisites
 
-- **Node.js** (version 18 or higher)
+- **Node.js** (version 22 or higher)
 - **pnpm** 10.22.0 (package manager)
 - **Google Gemini API Key** (configure in `src/environments/environment.ts`)
 - **Supabase Project** with:
@@ -214,76 +213,6 @@ pnpm start
 - Click "Download Excel" to export all products
 - The file includes all columns and data from database
 
-## 🏗️ Project Structure
-
-```
-src/
-├── app/
-│   ├── components/
-│   │   ├── category-manager/     # Category management
-│   │   ├── dashboard/            # Main dashboard (protected)
-│   │   ├── login/                # Authentication UI
-│   │   ├── product-list/         # Product list and detail
-│   │   └── upload/               # Image upload and processing
-│   ├── guards/
-│   │   └── auth.guard.ts         # Route protection
-│   ├── models/
-│   │   └── inventory.model.ts    # Data models and entities
-│   ├── services/
-│   │   ├── ai.service.ts         # Gemini AI integration
-│   │   ├── auth.service.ts       # Authentication
-│   │   ├── category.service.ts   # Category management
-│   │   ├── excel.service.ts      # Excel export
-│   │   ├── image-optimization.service.ts  # WebP optimization
-│   │   ├── inventory.service.ts  # Product management
-│   │   ├── notification.service.ts # Toast notifications
-│   │   ├── supabase.service.ts   # Supabase client
-│   │   ├── theme.service.ts      # Dark/light mode
-│   │   └── toon.service.ts       # File utilities
-│   ├── app.routes.ts             # Route configuration
-│   ├── app.config.ts             # App configuration
-│   └── environments/             # Environment configuration
-├── libs/ui/                      # Reusable UI components
-└── public/                       # Static files
-```
-
-## 🗄️ Database Schema
-
-### Categories Table
-
-- `id` (UUID) - Primary key
-- `name` (VARCHAR) - Category name (unique)
-- `description` (TEXT) - Optional description
-- `created_at`, `updated_at` - Timestamps
-
-### Products Table
-
-- `id` (UUID) - Primary key
-- Complete product fields (nombre, precio, stock, etc.)
-- `categoria_id` (UUID) - Foreign key to categories
-- `created_at`, `updated_at` - Timestamps
-
-### Product Images Table
-
-- `id` (UUID) - Primary key
-- `product_id` (UUID) - Foreign key to products
-- `image_url` (TEXT) - Path in Supabase Storage
-- `filename`, `file_size`, `mime_type` - Image metadata
-- `display_order` - Image order
-
-## 🔒 Security and Best Practices
-
-- ✅ Supabase Authentication for user management
-- ✅ Row Level Security policies for data protection
-- ✅ Environment variables for sensitive API keys
-- ✅ Form validation with Angular Reactive Forms
-- ✅ User input sanitization
-- ✅ SonarQube compliance with code quality standards
-- ✅ Web accessibility (a11y) with ARIA roles and keyboard navigation
-- ✅ Semantic HTML and native `<dialog>` elements
-- ✅ Session persistence with token refresh
-- ✅ Immutable search_path for database functions
-
 ## 🧪 Testing
 
 ```bash
@@ -323,29 +252,51 @@ For complete configuration and deployment instructions, check out the dedicated 
 
 ### Local testing
 
+We updated the Dockerfile and CI workflows to use BuildKit secret mounts (recommended). For local development you can either use the provided helper script `build-local.sh` (recommended) or run BuildKit directly.
+
+1. Copy the example file to create a local env file and fill your keys:
+
 ```bash
-# Build with your credentials directly
-docker build -t inventory-to-csv:local \
-  --build-arg GOOGLE_GEMINI_API_KEY="your_key" \
-  --build-arg SUPABASE_URL="your_url" \
-  --build-arg SUPABASE_ANON_KEY="your_key" \
+cp .env.local.example .env.local
+# then edit .env.local and replace placeholder values
+```
+
+Example `.env.local` variables (copied from `.env.local.example`):
+
+```env
+GOOGLE_GEMINI_API_KEY=your_google_gemini_api_key_here
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
+
+2. Use the helper script (recommended):
+
+```bash
+chmod +x build-local.sh
+./build-local.sh
+docker run -p 8080:80 inventory-to-csv:local
+# Open http://localhost:8080
+```
+
+3. Alternative: manual BuildKit command (creates temporary secret files)
+
+```bash
+# create temporary secret files (example)
+echo "your_google_gemini_api_key_here" > /tmp/google_gemini_api_key
+echo "your_supabase_url_here" > /tmp/supabase_url
+echo "your_supabase_anon_key_here" > /tmp/supabase_anon_key
+
+DOCKER_BUILDKIT=1 docker build -t inventory-to-csv:local \
+  --secret id=google_gemini_api_key,src=/tmp/google_gemini_api_key \
+  --secret id=supabase_url,src=/tmp/supabase_url \
+  --secret id=supabase_anon_key,src=/tmp/supabase_anon_key \
   .
 
-# Run
+rm /tmp/google_gemini_api_key /tmp/supabase_url /tmp/supabase_anon_key
 docker run -p 8080:80 inventory-to-csv:local
 ```
 
-Access at: `http://localhost:8080`
-
-## 📝 Code Conventions
-
-- **Language**: Code in English, UI in Spanish
-- **State Management**: Angular Signals (no RxJS for state)
-- **Control Flow**: `@if`, `@for`, `@switch` (no legacy structural directives)
-- **Styling**: TailwindCSS only (no custom CSS)
-- **Components**: Standalone (no NgModules)
-- **Change Detection**: `OnPush` in all components
-- **Async Operations**: Outside constructors following S7059 rule
+Access at: `http://localhost:80`
 
 ## 🤝 Contributing
 
@@ -374,4 +325,3 @@ This project is under private license.
 - Angular Team for the excellent framework
 - Spartan NG for primitive UI components
 - Lucide Icons for iconography
-- Sonner for toast notifications
