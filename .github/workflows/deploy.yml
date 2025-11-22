@@ -50,10 +50,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            GOOGLE_GEMINI_API_KEY=${{ secrets.GOOGLE_GEMINI_API_KEY }}
-            SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-            SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          secrets: |
+            google_gemini_api_key=${{ secrets.GOOGLE_GEMINI_API_KEY }}
+            supabase_url=${{ secrets.SUPABASE_URL }}
+            supabase_anon_key=${{ secrets.SUPABASE_ANON_KEY }}
 
   deploy-to-dokploy:
     name: Deploy to Production
