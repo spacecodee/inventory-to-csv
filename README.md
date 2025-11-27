@@ -118,13 +118,22 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - System of predefined categories
 - Real-time synchronization with database
 
-### 📦 Barcode Management
+### 📦 Barcode & Label Management
 
 - **CODE128 format** barcode visualization
-- **Individual download** of barcodes as PNG images from product detail
-- **Bulk download by page**: generates a ZIP with all barcodes from the current page
-  - Format: `barcodes-page-{N}.zip`
-  - Each image named with its corresponding barcode code
+- **3 Download Formats**:
+  - **Código**: Only barcode
+  - **Código + Info**: Barcode with product name and price
+  - **Etiqueta**: Product name and price only (no barcode)
+- **Download Options**:
+  - **Individual** downloads from product detail modal
+  - **Bulk downloads by page** as ZIP files
+  - All formats support both individual and batch operations
+- **Professional Design**:
+  - Standard black color scheme
+  - Clear, readable fonts
+  - Optimized for printing and labeling
+  - Automatic text truncation for long product names
 
 ### 📤 Export Functionality
 
@@ -352,10 +361,21 @@ Each product row has **9 action buttons**:
 - Click the sun/moon icon in the header to toggle theme
 - Theme preference is saved locally
 
-### 9. Download Barcodes
+### 9. Download Barcodes & Labels
 
-- **Individual**: From the product detail, click "Download barcode"
-- **Bulk**: In the list, click "Download Codes" to get a ZIP with all barcodes from the current page
+**Individual (from Product Detail)**:
+
+- **Descargar código** (blue): Only barcode as PNG
+- **Con info** (green): Barcode + product name + price
+- **Etiqueta** (violet): Product name + price only (no barcode)
+
+**Bulk (from Product List by page)**:
+
+- **Códigos** (gray): ZIP with only barcodes
+- **Códigos + Info** (green): ZIP with barcodes + name + price
+- **Etiquetas** (violet): ZIP with price labels only
+
+All files are named with the product barcode or internal code for easy identification.
 
 ### 10. Export to Excel
 
