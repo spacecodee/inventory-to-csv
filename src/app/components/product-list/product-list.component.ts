@@ -7,6 +7,8 @@ import {
   lucideCheck,
   lucideDownload,
   lucideEye,
+  lucideFileCode,
+  lucideFolderOpen,
   lucidePackage,
   lucideScanBarcode,
   lucideSearch,
@@ -20,9 +22,11 @@ import { Product } from '../../models/inventory.model';
 import { ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
 import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-suffix-dialog';
+import { CategoryEditorDialogComponent } from './category-editor-dialog/category-editor-dialog';
 import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-calculator-dialog';
 import { ProductDetailComponent } from './product-detail.component';
 import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-dialog';
+import { SunatCodeDialogComponent } from './sunat-code-dialog/sunat-code-dialog';
 
 @Component({
   selector: 'app-product-list',
@@ -35,6 +39,8 @@ import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-d
     PriceCalculatorDialogComponent,
     StockEditorDialogComponent,
     BarcodeSuffixDialogComponent,
+    SunatCodeDialogComponent,
+    CategoryEditorDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -49,6 +55,8 @@ import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-d
       lucideCalculator,
       lucidePackage,
       lucideTag,
+      lucideFileCode,
+      lucideFolderOpen,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -105,6 +113,24 @@ export class ProductListComponent {
 
   barcodeSuffixProduct = computed(() => {
     const id = this.barcodeSuffixProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
+  });
+
+  // SUNAT Code Editor State
+  sunatCodeProductId = signal<string | null>(null);
+
+  sunatCodeProduct = computed(() => {
+    const id = this.sunatCodeProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
+  });
+
+  // Category Editor State
+  categoryEditorProductId = signal<string | null>(null);
+
+  categoryEditorProduct = computed(() => {
+    const id = this.categoryEditorProductId();
     if (!id) return null;
     return this.products().find((p) => p.id === id) || null;
   });
@@ -262,6 +288,48 @@ export class ProductListComponent {
 
     await this.inventoryService.updateProduct(updatedProduct);
     this.closeBarcodeSuffixEditor();
+  }
+
+  openSunatCodeEditor(product: Product) {
+    this.sunatCodeProductId.set(product.id);
+  }
+
+  closeSunatCodeEditor() {
+    this.sunatCodeProductId.set(null);
+  }
+
+  async applySunatCode(data: { codigoSunat: string }) {
+    const product = this.sunatCodeProduct();
+    if (!product) return;
+
+    const updatedProduct: Product = {
+      ...product,
+      codigoSunat: data.codigoSunat,
+    };
+
+    await this.inventoryService.updateProduct(updatedProduct);
+    this.closeSunatCodeEditor();
+  }
+
+  openCategoryEditor(product: Product) {
+    this.categoryEditorProductId.set(product.id);
+  }
+
+  closeCategoryEditor() {
+    this.categoryEditorProductId.set(null);
+  }
+
+  async applyCategory(data: { categoria: string }) {
+    const product = this.categoryEditorProduct();
+    if (!product) return;
+
+    const updatedProduct: Product = {
+      ...product,
+      categoria: data.categoria,
+    };
+
+    await this.inventoryService.updateProduct(updatedProduct);
+    this.closeCategoryEditor();
   }
 
   async downloadBarcodes() {
