@@ -218,6 +218,13 @@
                       <ng-icon hlm name="lucidePackage" size="sm"></ng-icon>
                     </button>
                     <button
+                      (click)="openBarcodeSuffixEditor(product)"
+                      class="text-violet-500 hover:text-violet-400 transition-colors p-1"
+                      title="Editar Sufijo Código de Barras"
+                    >
+                      <ng-icon hlm name="lucideTag" size="sm"></ng-icon>
+                    </button>
+                    <button
                       (click)="viewProduct(product)"
                       class="text-primary hover:text-primary/80 transition-colors p-1"
                       title="Ver Detalle"
@@ -305,4 +312,11 @@
     (closeDialog)="closeStockEditor()"
     (apply)="applyStockChanges($event)"
   ></app-stock-editor-dialog>
+}
+@if (barcodeSuffixProduct()) {
+  <app-barcode-suffix-dialog
+    [product]="barcodeSuffixProduct()!"
+    (closeDialog)="closeBarcodeSuffixEditor()"
+    (apply)="applyBarcodeSuffix($event)"
+  ></app-barcode-suffix-dialog>
 }

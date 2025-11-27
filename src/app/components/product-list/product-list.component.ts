@@ -11,6 +11,7 @@ import {
   lucideScanBarcode,
   lucideSearch,
   lucideSettings2,
+  lucideTag,
   lucideTrash2,
   lucideX,
 } from '@ng-icons/lucide';
@@ -18,6 +19,7 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { Product } from '../../models/inventory.model';
 import { ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
+import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-suffix-dialog';
 import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-calculator-dialog';
 import { ProductDetailComponent } from './product-detail.component';
 import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-dialog';
@@ -32,6 +34,7 @@ import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-d
     FormsModule,
     PriceCalculatorDialogComponent,
     StockEditorDialogComponent,
+    BarcodeSuffixDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -45,6 +48,7 @@ import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-d
       lucideScanBarcode,
       lucideCalculator,
       lucidePackage,
+      lucideTag,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -92,6 +96,15 @@ export class ProductListComponent {
 
   stockEditorProduct = computed(() => {
     const id = this.stockEditorProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
+  });
+
+  // Barcode Suffix Editor State
+  barcodeSuffixProductId = signal<string | null>(null);
+
+  barcodeSuffixProduct = computed(() => {
+    const id = this.barcodeSuffixProductId();
     if (!id) return null;
     return this.products().find((p) => p.id === id) || null;
   });
@@ -228,6 +241,27 @@ export class ProductListComponent {
 
     await this.inventoryService.updateProduct(updatedProduct);
     this.closeStockEditor();
+  }
+
+  openBarcodeSuffixEditor(product: Product) {
+    this.barcodeSuffixProductId.set(product.id);
+  }
+
+  closeBarcodeSuffixEditor() {
+    this.barcodeSuffixProductId.set(null);
+  }
+
+  async applyBarcodeSuffix(data: { codigoBarras: string }) {
+    const product = this.barcodeSuffixProduct();
+    if (!product) return;
+
+    const updatedProduct: Product = {
+      ...product,
+      codigoBarras: data.codigoBarras,
+    };
+
+    await this.inventoryService.updateProduct(updatedProduct);
+    this.closeBarcodeSuffixEditor();
   }
 
   async downloadBarcodes() {
