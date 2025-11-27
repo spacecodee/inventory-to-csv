@@ -142,6 +142,7 @@ export interface Product {
   fechaVencimiento: string;
   codigoBarras: string;
   imagenes: ProductImage[];
+  supplierInvoices?: SupplierInvoice[];
   imageFiles?: File[];
 }
 
@@ -204,6 +205,7 @@ export interface SupplierInvoice {
   montoTotal?: number;
   notas?: string;
   supplier?: Supplier;
+  suppliers?: SupplierEntity;
 }
 
 export interface SupplierInvoiceEntity {

@@ -150,6 +150,12 @@
           @if (columnVisibility()['codigoBarras']) {
             <th class="px-3 sm:px-6 py-2 sm:py-3">Código Barras</th>
           }
+          @if (columnVisibility()['factura']) {
+            <th class="px-3 sm:px-6 py-2 sm:py-3">Factura</th>
+          }
+          @if (columnVisibility()['proveedor']) {
+            <th class="px-3 sm:px-6 py-2 sm:py-3">Proveedor</th>
+          }
           @if (columnVisibility()['acciones']) {
             <th class="px-3 sm:px-6 py-2 sm:py-3">Acciones</th>
           }
@@ -234,6 +240,30 @@
               @if (columnVisibility()['codigoBarras']) {
                 <td class="px-3 sm:px-6 py-3 sm:py-4 font-mono text-[10px] sm:text-xs">
                   {{ product.codigoBarras }}
+                </td>
+              }
+              @if (columnVisibility()['factura']) {
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-muted-foreground">
+                  {{
+                    product.supplierInvoices && product.supplierInvoices.length > 0
+                      ? product.supplierInvoices[0].numeroFactura
+                      : '-'
+                  }}
+                </td>
+              }
+              @if (columnVisibility()['proveedor']) {
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-muted-foreground">
+                  @if (product.supplierInvoices && product.supplierInvoices.length > 0) {
+                    <span class="text-xs sm:text-sm">
+              {{ product.supplierInvoices[0].suppliers?.razon_social ?? '-' }}
+            </span>
+                    <br/>
+                    <span class="text-[10px] text-muted-foreground/70">
+              {{ product.supplierInvoices[0].suppliers?.ruc ?? '-' }}
+            </span>
+                  } @else {
+                    <span>-</span>
+                  }
                 </td>
               }
               @if (columnVisibility()['acciones']) {

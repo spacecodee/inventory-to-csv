@@ -36,7 +36,8 @@ export class InventoryService {
       `
         *,
         categories!categoria_id(id, name),
-        product_images(*)
+        product_images(*),
+        product_supplier_invoices(*, supplier_invoices(*, suppliers(*)))
       `
     )
     .order('created_at', { ascending: false });
@@ -266,6 +267,17 @@ export class InventoryService {
         };
       }) || [];
 
+    const supplierInvoices =
+      entity.product_supplier_invoices?.map((psi: any) => ({
+        id: psi.supplier_invoices.id,
+        supplierId: psi.supplier_invoices.supplier_id,
+        numeroFactura: psi.supplier_invoices.numero_factura,
+        fechaFactura: psi.supplier_invoices.fecha_factura,
+        montoTotal: psi.supplier_invoices.monto_total,
+        notas: psi.supplier_invoices.notas,
+        suppliers: psi.supplier_invoices.suppliers,
+      })) || [];
+
     return {
       id: entity.id,
       nombre: entity.nombre,
@@ -289,6 +301,7 @@ export class InventoryService {
       fechaVencimiento: entity.fecha_vencimiento || '',
       codigoBarras: entity.codigo_barras || '',
       imagenes: images,
+      supplierInvoices,
     };
   }
 }

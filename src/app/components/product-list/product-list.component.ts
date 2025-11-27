@@ -106,6 +106,8 @@ export class ProductListComponent {
     { key: 'totalVenta', label: 'Total Venta', visible: true, alwaysVisible: false },
     { key: 'codigoInterno', label: 'Código', visible: true, alwaysVisible: false },
     { key: 'codigoBarras', label: 'Código Barras', visible: true, alwaysVisible: false },
+    { key: 'factura', label: 'Factura', visible: true, alwaysVisible: false },
+    { key: 'proveedor', label: 'Proveedor', visible: true, alwaysVisible: false },
     { key: 'acciones', label: 'Acciones', visible: true, alwaysVisible: true },
   ]);
 
