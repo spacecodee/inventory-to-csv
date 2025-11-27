@@ -360,13 +360,19 @@ export class ProductListComponent {
     this.sunatCodeProductId.set(null);
   }
 
-  async applySunatCode(data: { codigoSunat: string }) {
+  async applySunatCode(data: {
+    codigoSunat: string;
+    codigoTipoAfectacionIgvVenta: string;
+    codigoTipoAfectacionIgvCompra: string;
+  }) {
     const product = this.sunatCodeProduct();
     if (!product) return;
 
     const updatedProduct: Product = {
       ...product,
       codigoSunat: data.codigoSunat,
+      codigoTipoAfectacionIgvVenta: data.codigoTipoAfectacionIgvVenta,
+      codigoTipoAfectacionIgvCompra: data.codigoTipoAfectacionIgvCompra,
     };
 
     await this.inventoryService.updateProduct(updatedProduct);

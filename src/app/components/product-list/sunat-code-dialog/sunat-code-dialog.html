@@ -37,16 +37,54 @@
         />
       </div>
 
-      @if (editableCodigoSunat()) {
-        <div class="p-3 bg-primary/10 rounded-lg border border-primary/20">
-          <div class="flex flex-col gap-1">
-            <span class="text-xs text-muted-foreground">Nuevo Codigo</span>
-            <span class="text-lg font-mono font-bold text-primary">
-            {{ editableCodigoSunat() }}
-          </span>
-          </div>
+      <div class="space-y-2">
+        <label for="afectacionVenta" class="text-xs text-muted-foreground"
+        >Tipo Afectacion IGV Venta</label
+        >
+        <select
+          id="afectacionVenta"
+          [ngModel]="editableCodigoAfectacionIgvVenta()"
+          (ngModelChange)="updateCodigoAfectacionVenta($event)"
+          class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+        >
+          @for (option of afectacionOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="space-y-2">
+        <label for="afectacionCompra" class="text-xs text-muted-foreground"
+        >Tipo Afectacion IGV Compra</label
+        >
+        <select
+          id="afectacionCompra"
+          [ngModel]="editableCodigoAfectacionIgvCompra()"
+          (ngModelChange)="updateCodigoAfectacionCompra($event)"
+          class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+        >
+          @for (option of afectacionOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="p-3 bg-primary/10 rounded-lg border border-primary/20 space-y-2">
+        <div class="flex justify-between text-sm">
+          <span class="text-muted-foreground">Codigo SUNAT:</span>
+          <span class="font-mono font-medium text-foreground">{{
+              editableCodigoSunat() || '-'
+            }}</span>
         </div>
-      }
+        <div class="flex justify-between text-sm">
+          <span class="text-muted-foreground">Afectacion Venta:</span>
+          <span class="font-medium text-primary">{{ editableCodigoAfectacionIgvVenta() }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-muted-foreground">Afectacion Compra:</span>
+          <span class="font-medium text-primary">{{ editableCodigoAfectacionIgvCompra() }}</span>
+        </div>
+      </div>
     </div>
 
     <div class="flex gap-3 p-4 border-t border-border">
@@ -58,10 +96,9 @@
       </button>
       <button
         (click)="onApply()"
-        [disabled]="!editableCodigoSunat()"
-        class="flex-1 px-4 py-2 rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        class="flex-1 px-4 py-2 rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
       >
-        Aplicar Cambio
+        Aplicar Cambios
       </button>
     </div>
   </div>
