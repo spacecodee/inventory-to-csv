@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
 import { lucideChevronLeft, lucideChevronRight, lucideX } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
@@ -14,6 +22,7 @@ import { Product } from '../../../models/inventory.model';
 })
 export class ImageViewerDialogComponent {
   product = input.required<Product>();
+  initialIndex = input<number>(0);
   closeDialog = output<void>();
 
   currentIndex = signal(0);
@@ -27,6 +36,13 @@ export class ImageViewerDialogComponent {
   });
 
   hasMultipleImages = computed(() => this.images().length > 1);
+
+  constructor() {
+    effect(() => {
+      const idx = this.initialIndex();
+      this.currentIndex.set(idx);
+    });
+  }
 
   nextImage() {
     const total = this.images().length;

@@ -44,12 +44,14 @@
       <div class="grid grid-cols-1 gap-4 sm:gap-6">
         <!-- Images Section (Always Read-Only) -->
         <div class="col-span-1 mb-2 sm:mb-4">
-          <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Imágenes</h3>
+          <h3 class="text-base sm:text-lg font-semibold mb-2 sm:mb-3 text-primary">Imagenes</h3>
           <div class="flex gap-2 sm:gap-4 overflow-x-auto pb-2">
             @if (imageUrls().length > 0) {
               @for (item of imageUrls(); track $index) {
-                <div
-                  class="relative group rounded-lg overflow-hidden border border-border w-32 h-32 sm:w-48 sm:h-48 flex-shrink-0 bg-secondary/10"
+                <button
+                  type="button"
+                  (click)="openImageViewer($index)"
+                  class="relative group rounded-lg overflow-hidden border border-border w-32 h-32 sm:w-48 sm:h-48 flex-shrink-0 bg-secondary/10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
                 >
                   <img [src]="item.url" class="w-full h-full object-cover" [alt]="item.name"/>
                   <div
@@ -57,16 +59,22 @@
                   >
                     {{ item.name }}
                   </div>
-                </div>
+                  <div
+                    class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center"
+                  >
+                <span
+                  class="text-white opacity-0 group-hover:opacity-100 text-xs sm:text-sm font-medium transition-opacity"
+                >
+                  Ver
+                </span>
+                  </div>
+                </button>
               }
             } @else {
               <div
                 class="p-3 sm:p-4 border border-dashed border-border rounded-lg text-muted-foreground w-full text-center text-xs sm:text-sm"
               >
-                No hay previsualización de imágenes disponible.
-                <div class="mt-2 text-[10px] sm:text-xs">
-                  Archivos originales: {{ product().imagenes.join(', ') }}
-                </div>
+                No hay previsualizacion de imagenes disponible.
               </div>
             }
           </div>
@@ -181,3 +189,11 @@
     </div>
   </dialog>
 </div>
+
+@if (showImageViewer()) {
+  <app-image-viewer-dialog
+    [product]="product()"
+    [initialIndex]="selectedImageIndex()"
+    (closeDialog)="closeImageViewer()"
+  ></app-image-viewer-dialog>
+}

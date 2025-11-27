@@ -87,7 +87,7 @@ export class AiService {
         stockMinimo: 0,
         codigoLote: '',
         fechaVencimiento: '',
-        imagenes: files.map((f) => f.name),
+        imagenes: files.map((f) => ({ url: '', filename: f.name })),
       };
     } catch (error) {
       console.error('Error analyzing product with Gemini:', error);
@@ -140,7 +140,7 @@ export class AiService {
       stockMinimo: 0,
       codigoLote: '',
       fechaVencimiento: '',
-      imagenes: [file.name],
+      imagenes: [{ url: '', filename: file.name }],
     };
   }
 }

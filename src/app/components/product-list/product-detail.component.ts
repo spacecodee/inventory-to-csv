@@ -6,11 +6,12 @@ import { lucideEdit, lucideSave, lucideX } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { Product } from '../../models/inventory.model';
 import { InventoryService } from '../../services/inventory.service';
+import { ImageViewerDialogComponent } from './image-viewer-dialog/image-viewer-dialog';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, HlmIconImports, ReactiveFormsModule],
+  imports: [CommonModule, HlmIconImports, ReactiveFormsModule, ImageViewerDialogComponent],
   providers: [provideIcons({ lucideX, lucideEdit, lucideSave })],
   templateUrl: './product-detail.component.html',
 })
@@ -29,6 +30,8 @@ export class ProductDetailComponent {
   protected readonly saveIcon = 'lucideSave';
 
   private readonly localFiles = signal<File[]>([]);
+  showImageViewer = signal(false);
+  selectedImageIndex = signal(0);
 
   fields = [
     { label: 'Nombre', key: 'nombre', type: 'text' },
@@ -62,14 +65,29 @@ export class ProductDetailComponent {
     { label: 'Nombres de Imágenes', key: 'imagenes', type: 'text' },
   ];
 
-  // Computed signal to generate stable URLs for images
   imageUrls = computed(() => {
+    const p = this.product();
+    if (p.imagenes && p.imagenes.length > 0) {
+      return p.imagenes.map((img) => ({
+        name: img.filename,
+        url: img.url,
+      }));
+    }
     const files = this.localFiles();
     return files.map((file) => ({
       name: file.name,
       url: URL.createObjectURL(file),
     }));
   });
+
+  openImageViewer(index: number) {
+    this.selectedImageIndex.set(index);
+    this.showImageViewer.set(true);
+  }
+
+  closeImageViewer() {
+    this.showImageViewer.set(false);
+  }
 
   constructor() {
     effect(() => {
@@ -207,7 +225,7 @@ export class ProductDetailComponent {
         ...this.product(),
         ...updatedValues,
       };
-      this.inventoryService.updateProduct(updatedProduct);
+      this.inventoryService.updateProduct(updatedProduct).then(() => undefined);
       this.isEditing.set(false);
     }
   }

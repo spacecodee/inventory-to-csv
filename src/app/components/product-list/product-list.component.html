@@ -167,7 +167,7 @@
                   >
                     @if (product.imagenes && product.imagenes.length > 0) {
                       <img
-                        [src]="product.imagenes[0]"
+                        [src]="product.imagenes[0].url"
                         [alt]="product.nombre"
                         class="w-full h-full object-cover"
                       />

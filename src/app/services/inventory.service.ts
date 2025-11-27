@@ -255,12 +255,15 @@ export class InventoryService {
 
   private mapEntityToProduct(entity: any): Product {
     const categoryName = entity.categories?.name || '';
-    const images: string[] =
+    const images =
       entity.product_images?.map((img: ProductImageEntity) => {
         const { data } = this.supabase.client.storage
         .from('product-images')
         .getPublicUrl(img.image_url);
-        return data.publicUrl;
+        return {
+          url: data.publicUrl,
+          filename: img.filename,
+        };
       }) || [];
 
     return {

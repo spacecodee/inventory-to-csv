@@ -114,6 +114,11 @@ export interface ProductImageInsert {
   display_order?: number;
 }
 
+export interface ProductImage {
+  url: string;
+  filename: string;
+}
+
 export interface Product {
   id: string;
   nombre: string;
@@ -136,7 +141,7 @@ export interface Product {
   codigoLote: string;
   fechaVencimiento: string;
   codigoBarras: string;
-  imagenes: string[];
+  imagenes: ProductImage[];
   imageFiles?: File[];
 }
 

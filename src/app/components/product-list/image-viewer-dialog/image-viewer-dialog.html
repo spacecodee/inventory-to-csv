@@ -24,7 +24,7 @@
     <div class="flex-1 flex items-center justify-center relative">
       @if (currentImage()) {
         <img
-          [src]="currentImage()"
+          [src]="currentImage()!.url"
           [alt]="product().nombre"
           class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
         />
@@ -53,6 +53,9 @@
 
     <div class="mt-4 text-center">
       <h3 class="text-lg font-semibold text-white mb-2">{{ product().nombre }}</h3>
+      @if (currentImage()) {
+        <p class="text-sm text-white/60 mb-2 font-mono">{{ currentImage()!.filename }}</p>
+      }
       @if (hasMultipleImages()) {
         <div class="flex justify-center gap-2">
           @for (img of images(); track $index) {
@@ -63,7 +66,7 @@
               [class.border-transparent]="currentIndex() !== $index"
               [class.opacity-50]="currentIndex() !== $index"
             >
-              <img [src]="img" [alt]="'Thumbnail ' + ($index + 1)" class="w-full h-full object-cover"/>
+              <img [src]="img.url" [alt]="img.filename" class="w-full h-full object-cover"/>
             </button>
           }
         </div>
