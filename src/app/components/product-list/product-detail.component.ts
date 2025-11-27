@@ -5,6 +5,7 @@ import { provideIcons } from '@ng-icons/core';
 import { lucideEdit, lucideSave, lucideX } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { Product } from '../../models/inventory.model';
+import { BarcodeService } from '../../services/barcode.service';
 import { InventoryService } from '../../services/inventory.service';
 import { ImageViewerDialogComponent } from './image-viewer-dialog/image-viewer-dialog';
 
@@ -17,6 +18,7 @@ import { ImageViewerDialogComponent } from './image-viewer-dialog/image-viewer-d
 })
 export class ProductDetailComponent {
   private readonly inventoryService = inject(InventoryService);
+  private readonly barcodeService = inject(BarcodeService);
   private readonly fb = inject(FormBuilder);
 
   product = input.required<Product>();
@@ -112,67 +114,27 @@ export class ProductDetailComponent {
     });
   }
 
-  // Render barcode into the SVG with id 'barcode-svg'
   private async renderBarcode(value: string) {
     try {
-      const JsBarcode = (await import('jsbarcode')).default || (await import('jsbarcode'));
       const svg = document.getElementById('barcode-svg') as SVGElement | null;
       if (!svg) return;
-      // Clear previous contents
-      while (svg.firstChild) svg.firstChild.remove();
-      // @ts-ignore - JsBarcode types may not match default import shape
-      JsBarcode(svg, String(value), {
-        format: 'CODE128',
-        displayValue: true,
-        fontSize: 14,
-        height: 60,
-      });
+      await this.barcodeService.renderBarcodeToSvg(svg, value);
     } catch (err) {
-      // fail silently if barcode lib not available
       console.error('Failed to render barcode', err);
     }
   }
 
-  // Download the barcode as PNG
   async downloadBarcode() {
     const svg = document.getElementById('barcode-svg') as SVGSVGElement | null;
     if (!svg) return;
+    const code = this.product()?.codigoBarras || 'barcode';
+    await this.barcodeService.downloadBarcode(svg, code);
+  }
 
-    const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svg);
-    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-
-    const img = new Image();
-    img.onload = async () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width || 600;
-        canvas.height = img.height || 200;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        // white background
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob((pngBlob) => {
-          if (!pngBlob) return;
-          const a = document.createElement('a');
-          const pngUrl = URL.createObjectURL(pngBlob);
-          a.href = pngUrl;
-          const code = this.product()?.codigoBarras || 'barcode';
-          a.download = `${ code }.png`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(pngUrl);
-        }, 'image/png');
-      } finally {
-        URL.revokeObjectURL(url);
-      }
-    };
-    img.onerror = () => URL.revokeObjectURL(url);
-    img.src = url;
+  async downloadBarcodeWithInfo() {
+    const svg = document.getElementById('barcode-svg') as SVGSVGElement | null;
+    if (!svg) return;
+    await this.barcodeService.downloadBarcodeWithInfo(svg, this.product());
   }
 
   getValue(key: string): any {

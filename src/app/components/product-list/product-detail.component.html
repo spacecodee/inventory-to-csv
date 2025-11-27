@@ -98,12 +98,18 @@
               <div class="font-mono text-sm sm:text-lg text-foreground break-all">
                 {{ product().codigoBarras || '-' }}
               </div>
-              <div class="mt-2 sm:mt-3">
+              <div class="mt-2 sm:mt-3 flex flex-col sm:flex-row gap-2">
                 <button
                   (click)="downloadBarcode()"
                   class="w-full sm:w-auto px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
                   Descargar código
+                </button>
+                <button
+                  (click)="downloadBarcodeWithInfo()"
+                  class="w-full sm:w-auto px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                >
+                  Descargar con info
                 </button>
               </div>
             </div>

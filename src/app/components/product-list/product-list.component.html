@@ -32,7 +32,17 @@
           title="Descargar códigos de barras de la página actual"
         >
           <ng-icon hlm name="lucideScanBarcode" size="sm"></ng-icon>
-          <span class="hidden sm:inline">Descargar Códigos</span>
+          <span class="hidden sm:inline">Códigos</span>
+        </button>
+
+        <button
+          (click)="downloadBarcodesWithInfo()"
+          class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+          [disabled]="paginatedProducts().length === 0"
+          title="Descargar códigos con nombre y precio"
+        >
+          <ng-icon hlm name="lucideScanBarcode" size="sm"></ng-icon>
+          <span class="hidden sm:inline">Códigos + Info</span>
         </button>
 
         <button
