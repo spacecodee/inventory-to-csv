@@ -6,10 +6,12 @@ import {
   lucideCalculator,
   lucideCheck,
   lucideDownload,
+  lucideEdit,
   lucideEye,
   lucideFileCode,
   lucideFileText,
   lucideFolderOpen,
+  lucideImage,
   lucidePackage,
   lucidePercent,
   lucideScanBarcode,
@@ -26,8 +28,10 @@ import { InventoryService } from '../../services/inventory.service';
 import { SystemConfigService } from '../../services/system-config.service';
 import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-suffix-dialog';
 import { CategoryEditorDialogComponent } from './category-editor-dialog/category-editor-dialog';
+import { ImageViewerDialogComponent } from './image-viewer-dialog/image-viewer-dialog';
 import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-calculator-dialog';
 import { ProductDetailComponent } from './product-detail.component';
+import { ProductNameDialogComponent } from './product-name-dialog/product-name-dialog';
 import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-dialog';
 import { SunatCodeDialogComponent } from './sunat-code-dialog/sunat-code-dialog';
 import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/supplier-invoice-dialog';
@@ -46,6 +50,8 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
     SunatCodeDialogComponent,
     CategoryEditorDialogComponent,
     SupplierInvoiceDialogComponent,
+    ProductNameDialogComponent,
+    ImageViewerDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -64,6 +70,8 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
       lucideFolderOpen,
       lucidePercent,
       lucideFileText,
+      lucideEdit,
+      lucideImage,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -151,6 +159,24 @@ export class ProductListComponent {
 
   supplierInvoiceProduct = computed(() => {
     const id = this.supplierInvoiceProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
+  });
+
+  // Product Name Editor State
+  productNameEditorProductId = signal<string | null>(null);
+
+  productNameEditorProduct = computed(() => {
+    const id = this.productNameEditorProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
+  });
+
+  // Image Viewer State
+  imageViewerProductId = signal<string | null>(null);
+
+  imageViewerProduct = computed(() => {
+    const id = this.imageViewerProductId();
     if (!id) return null;
     return this.products().find((p) => p.id === id) || null;
   });
@@ -419,6 +445,36 @@ export class ProductListComponent {
 
   closeSupplierInvoiceDialog() {
     this.supplierInvoiceProductId.set(null);
+  }
+
+  openProductNameEditor(product: Product) {
+    this.productNameEditorProductId.set(product.id);
+  }
+
+  closeProductNameEditor() {
+    this.productNameEditorProductId.set(null);
+  }
+
+  async applyProductName(data: { nombre: string; descripcion: string }) {
+    const product = this.productNameEditorProduct();
+    if (!product) return;
+
+    const updatedProduct: Product = {
+      ...product,
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+    };
+
+    await this.inventoryService.updateProduct(updatedProduct);
+    this.closeProductNameEditor();
+  }
+
+  openImageViewer(product: Product) {
+    this.imageViewerProductId.set(product.id);
+  }
+
+  closeImageViewer() {
+    this.imageViewerProductId.set(null);
   }
 
   async downloadBarcodes() {

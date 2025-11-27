@@ -1,0 +1,74 @@
+<dialog
+  open
+  class="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4 m-0 w-full h-full max-w-full max-h-full"
+  (click)="onClose()"
+  (keydown.escape)="onClose()"
+  (keydown.arrowLeft)="prevImage()"
+  (keydown.arrowRight)="nextImage()"
+>
+  <div class="fixed inset-0 bg-black/80"></div>
+  <div
+    class="relative w-full max-w-4xl max-h-[90vh] flex flex-col"
+    (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()"
+  >
+    <div class="absolute top-4 right-4 z-10">
+      <button
+        (click)="onClose()"
+        class="p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+      >
+        <ng-icon hlm name="lucideX" size="lg"></ng-icon>
+      </button>
+    </div>
+
+    <div class="flex-1 flex items-center justify-center relative">
+      @if (currentImage()) {
+        <img
+          [src]="currentImage()"
+          [alt]="product().nombre"
+          class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+        />
+      } @else {
+        <div
+          class="w-64 h-64 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground"
+        >
+          Sin imagenes
+        </div>
+      }
+      @if (hasMultipleImages()) {
+        <button
+          (click)="prevImage()"
+          class="absolute left-4 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+        >
+          <ng-icon hlm name="lucideChevronLeft" size="lg"></ng-icon>
+        </button>
+        <button
+          (click)="nextImage()"
+          class="absolute right-4 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+        >
+          <ng-icon hlm name="lucideChevronRight" size="lg"></ng-icon>
+        </button>
+      }
+    </div>
+
+    <div class="mt-4 text-center">
+      <h3 class="text-lg font-semibold text-white mb-2">{{ product().nombre }}</h3>
+      @if (hasMultipleImages()) {
+        <div class="flex justify-center gap-2">
+          @for (img of images(); track $index) {
+            <button
+              (click)="goToImage($index)"
+              class="w-16 h-16 rounded-md overflow-hidden border-2 transition-all"
+              [class.border-primary]="currentIndex() === $index"
+              [class.border-transparent]="currentIndex() !== $index"
+              [class.opacity-50]="currentIndex() !== $index"
+            >
+              <img [src]="img" [alt]="'Thumbnail ' + ($index + 1)" class="w-full h-full object-cover"/>
+            </button>
+          }
+        </div>
+        <p class="text-sm text-white/70 mt-2">{{ currentIndex() + 1 }} / {{ images().length }}</p>
+      }
+    </div>
+  </div>
+</dialog>

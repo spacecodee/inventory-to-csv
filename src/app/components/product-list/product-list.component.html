@@ -160,11 +160,21 @@
             <tr class="bg-card border-b border-border hover:bg-secondary/20 transition-colors">
               @if (columnVisibility()['imagen']) {
                 <td class="px-3 sm:px-6 py-3 sm:py-4">
-                  <div
-                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-secondary overflow-hidden flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground"
+                  <button
+                    (click)="openImageViewer(product)"
+                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-secondary overflow-hidden flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer"
+                    title="Ver imagenes"
                   >
-                    IMG
-                  </div>
+                    @if (product.imagenes && product.imagenes.length > 0) {
+                      <img
+                        [src]="product.imagenes[0]"
+                        [alt]="product.nombre"
+                        class="w-full h-full object-cover"
+                      />
+                    } @else {
+                      <ng-icon hlm name="lucideImage" size="sm"></ng-icon>
+                    }
+                  </button>
                 </td>
               }
               @if (columnVisibility()['nombre']) {
@@ -270,6 +280,13 @@
                       title="Facturas y Proveedores"
                     >
                       <ng-icon hlm name="lucideFileText" size="sm"></ng-icon>
+                    </button>
+                    <button
+                      (click)="openProductNameEditor(product)"
+                      class="text-sky-500 hover:text-sky-400 transition-colors p-1"
+                      title="Editar Nombre y Descripcion"
+                    >
+                      <ng-icon hlm name="lucideEdit" size="sm"></ng-icon>
                     </button>
                     <button
                       (click)="viewProduct(product)"
@@ -386,6 +403,19 @@
     [product]="supplierInvoiceProduct()!"
     (closeDialog)="closeSupplierInvoiceDialog()"
   ></app-supplier-invoice-dialog>
+}
+@if (productNameEditorProduct()) {
+  <app-product-name-dialog
+    [product]="productNameEditorProduct()!"
+    (closeDialog)="closeProductNameEditor()"
+    (apply)="applyProductName($event)"
+  ></app-product-name-dialog>
+}
+@if (imageViewerProduct()) {
+  <app-image-viewer-dialog
+    [product]="imageViewerProduct()!"
+    (closeDialog)="closeImageViewer()"
+  ></app-image-viewer-dialog>
 }
 @if (showIgvDialog()) {
   <dialog
