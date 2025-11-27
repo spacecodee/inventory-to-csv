@@ -90,6 +90,8 @@ export class ProductListComponent {
     { key: 'stock', label: 'Stock', visible: true, alwaysVisible: false },
     { key: 'precioCompra', label: 'P. Compra', visible: true, alwaysVisible: false },
     { key: 'precioVenta', label: 'P. Venta', visible: true, alwaysVisible: false },
+    { key: 'totalCompra', label: 'Total Compra', visible: true, alwaysVisible: false },
+    { key: 'totalVenta', label: 'Total Venta', visible: true, alwaysVisible: false },
     { key: 'codigoInterno', label: 'Código', visible: true, alwaysVisible: false },
     { key: 'codigoBarras', label: 'Código Barras', visible: true, alwaysVisible: false },
     { key: 'acciones', label: 'Acciones', visible: true, alwaysVisible: true },
