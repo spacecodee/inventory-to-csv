@@ -184,3 +184,105 @@ ON CONFLICT (name) DO NOTHING;
 -- 1. Public read access (allow anyone to view images)
 -- 2. Authenticated users can upload images
 -- 3. Authenticated users can delete their own images
+
+-- =====================================================
+-- SUPPLIERS TABLE (Proveedores)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS suppliers
+(
+  id           UUID PRIMARY KEY         DEFAULT uuid_generate_v4(),
+  razon_social VARCHAR(500) NOT NULL,
+  ruc          VARCHAR(20),
+  direccion    TEXT,
+  telefono     VARCHAR(50),
+  email        VARCHAR(255),
+  created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_suppliers_razon_social ON suppliers (razon_social);
+CREATE INDEX idx_suppliers_ruc ON suppliers (ruc);
+
+-- =====================================================
+-- INVOICES TABLE (Facturas de Proveedor)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS supplier_invoices
+(
+  id             UUID PRIMARY KEY         DEFAULT uuid_generate_v4(),
+  supplier_id    UUID         NOT NULL REFERENCES suppliers (id) ON DELETE CASCADE,
+  numero_factura VARCHAR(100) NOT NULL,
+  fecha_factura  DATE,
+  monto_total    DECIMAL(12, 2),
+  notas          TEXT,
+  created_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_supplier_invoices_supplier_id ON supplier_invoices (supplier_id);
+CREATE INDEX idx_supplier_invoices_numero ON supplier_invoices (numero_factura);
+
+-- =====================================================
+-- PRODUCT-INVOICE RELATION TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS product_supplier_invoices
+(
+  id         UUID PRIMARY KEY         DEFAULT uuid_generate_v4(),
+  product_id UUID NOT NULL REFERENCES products (id) ON DELETE CASCADE,
+  invoice_id UUID NOT NULL REFERENCES supplier_invoices (id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE (product_id, invoice_id)
+);
+
+CREATE INDEX idx_product_supplier_invoices_product ON product_supplier_invoices (product_id);
+CREATE INDEX idx_product_supplier_invoices_invoice ON product_supplier_invoices (invoice_id);
+
+-- Triggers for updated_at
+CREATE TRIGGER update_suppliers_updated_at
+  BEFORE UPDATE
+  ON suppliers
+  FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_supplier_invoices_updated_at
+  BEFORE UPDATE
+  ON supplier_invoices
+  FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+-- Enable RLS
+ALTER TABLE suppliers
+  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE supplier_invoices
+  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_supplier_invoices
+  ENABLE ROW LEVEL SECURITY;
+
+-- Suppliers policies
+CREATE POLICY "Public read access for suppliers" ON suppliers
+  FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert suppliers" ON suppliers
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update suppliers" ON suppliers
+  FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can delete suppliers" ON suppliers
+  FOR DELETE USING (auth.role() = 'authenticated');
+
+-- Supplier invoices policies
+CREATE POLICY "Public read access for supplier_invoices" ON supplier_invoices
+  FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert supplier_invoices" ON supplier_invoices
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update supplier_invoices" ON supplier_invoices
+  FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can delete supplier_invoices" ON supplier_invoices
+  FOR DELETE USING (auth.role() = 'authenticated');
+
+-- Product-invoice relation policies
+CREATE POLICY "Public read access for product_supplier_invoices" ON product_supplier_invoices
+  FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert product_supplier_invoices" ON product_supplier_invoices
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update product_supplier_invoices" ON product_supplier_invoices
+  FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can delete product_supplier_invoices" ON product_supplier_invoices
+  FOR DELETE USING (auth.role() = 'authenticated');

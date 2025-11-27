@@ -8,6 +8,7 @@ import {
   lucideDownload,
   lucideEye,
   lucideFileCode,
+  lucideFileText,
   lucideFolderOpen,
   lucidePackage,
   lucidePercent,
@@ -29,6 +30,7 @@ import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-
 import { ProductDetailComponent } from './product-detail.component';
 import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-dialog';
 import { SunatCodeDialogComponent } from './sunat-code-dialog/sunat-code-dialog';
+import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/supplier-invoice-dialog';
 
 @Component({
   selector: 'app-product-list',
@@ -43,6 +45,7 @@ import { SunatCodeDialogComponent } from './sunat-code-dialog/sunat-code-dialog'
     BarcodeSuffixDialogComponent,
     SunatCodeDialogComponent,
     CategoryEditorDialogComponent,
+    SupplierInvoiceDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -60,6 +63,7 @@ import { SunatCodeDialogComponent } from './sunat-code-dialog/sunat-code-dialog'
       lucideFileCode,
       lucideFolderOpen,
       lucidePercent,
+      lucideFileText,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -138,6 +142,15 @@ export class ProductListComponent {
 
   categoryEditorProduct = computed(() => {
     const id = this.categoryEditorProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
+  });
+
+  // Supplier Invoice State
+  supplierInvoiceProductId = signal<string | null>(null);
+
+  supplierInvoiceProduct = computed(() => {
+    const id = this.supplierInvoiceProductId();
     if (!id) return null;
     return this.products().find((p) => p.id === id) || null;
   });
@@ -398,6 +411,14 @@ export class ProductListComponent {
 
     await this.inventoryService.updateProduct(updatedProduct);
     this.closeCategoryEditor();
+  }
+
+  openSupplierInvoiceDialog(product: Product) {
+    this.supplierInvoiceProductId.set(product.id);
+  }
+
+  closeSupplierInvoiceDialog() {
+    this.supplierInvoiceProductId.set(null);
   }
 
   async downloadBarcodes() {

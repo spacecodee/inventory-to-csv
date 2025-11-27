@@ -265,6 +265,13 @@
                       <ng-icon hlm name="lucideFolderOpen" size="sm"></ng-icon>
                     </button>
                     <button
+                      (click)="openSupplierInvoiceDialog(product)"
+                      class="text-pink-500 hover:text-pink-400 transition-colors p-1"
+                      title="Facturas y Proveedores"
+                    >
+                      <ng-icon hlm name="lucideFileText" size="sm"></ng-icon>
+                    </button>
+                    <button
                       (click)="viewProduct(product)"
                       class="text-primary hover:text-primary/80 transition-colors p-1"
                       title="Ver Detalle"
@@ -373,6 +380,12 @@
     (closeDialog)="closeCategoryEditor()"
     (apply)="applyCategory($event)"
   ></app-category-editor-dialog>
+}
+@if (supplierInvoiceProduct()) {
+  <app-supplier-invoice-dialog
+    [product]="supplierInvoiceProduct()!"
+    (closeDialog)="closeSupplierInvoiceDialog()"
+  ></app-supplier-invoice-dialog>
 }
 @if (showIgvDialog()) {
   <dialog
