@@ -29,13 +29,43 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - Automatic updated_at timestamps with triggers
 - Foreign key relationships for data integrity
 
-### 🖼️ Image Optimization
+### 🖼️ Image Management & Viewing
 
-- **Automatic WebP conversion** for all uploads
-- **Smart compression** with quality 0.8
-- **Auto-resizing** to max 1920x1440 while maintaining aspect ratio
-- **Significant storage savings** (25-35% reduction vs JPG)
-- Metadata tracking (file size, MIME type, display order)
+- **Full-screen Image Viewer**:
+  - Display product images at full resolution
+  - Navigation between multiple images (Previous/Next buttons, keyboard arrows)
+  - Thumbnail grid for quick selection
+  - Image filename reference display
+  - Dark background overlay for better visibility
+  - Accessible from product list table and product detail modal
+- **Image Metadata**:
+  - Filename tracking for each image
+  - Public URLs from Supabase Storage
+  - Display order preservation
+  - File size and MIME type information
+- **Clickable Image Thumbnails**:
+  - Click product image in table to open viewer
+  - Click image tiles in product detail modal
+  - Hover effects indicate interactivity
+
+### 🖼️ Image Management & Viewing
+
+- **Full-screen Image Viewer**:
+  - Display product images at full resolution
+  - Navigation between multiple images (Previous/Next buttons, keyboard arrows)
+  - Thumbnail grid for quick selection
+  - Image filename reference display
+  - Dark background overlay for better visibility
+  - Accessible from product list table and product detail modal
+- **Image Metadata**:
+  - Filename tracking for each image
+  - Public URLs from Supabase Storage
+  - Display order preservation
+  - File size and MIME type information
+- **Clickable Image Thumbnails**:
+  - Click product image in table to open viewer
+  - Click image tiles in product detail modal
+  - Hover effects indicate interactivity
 
 ### 📊 Product Management
 
@@ -48,13 +78,34 @@ A modern inventory processing and management system that uses **Google Gemini AI
   - 🏷️ **Barcode Suffix Editor**: Change barcode suffix (H, M, MIX, NA, GEN)
   - 📄 **SUNAT Code Editor**: Edit product SUNAT code
   - 📁 **Category Selector**: Select category from database categories
+  - 🩵 **Product Editor**: Edit product name and description
+  - 📄 **Supplier/Invoice Manager**: Manage product suppliers and invoices
   - 👁️ **View Details**: Open full product details in modal
   - ❌ **Delete**: Remove product from inventory
 - Instant data updates with Angular Signals
 - Detailed product view in modal
 - Direct integration with Supabase database
 
-### 🏷️ Category Management
+### � Supplier & Invoice Management
+
+- **Supplier Tracking**:
+  - Store supplier information (business name, RUC, address, phone, email)
+  - Create suppliers directly from invoice dialog
+  - Manage supplier data from Supabase
+- **Invoice Management**:
+  - Assign invoices to products
+  - Track invoice number and date
+  - Link invoices to suppliers
+  - Many-to-many relationship support (one product can have multiple invoices)
+- **Invoice Dialog Features**:
+  - View all invoices linked to a product
+  - Assign existing invoices with dropdown
+  - Create new suppliers inline
+  - Create new invoices inline
+  - Remove invoice assignments
+  - Real-time database synchronization
+
+### �🏷️ Category Management
 
 - Categories loaded directly from Supabase database
 - Dynamic creation of new categories
@@ -200,60 +251,111 @@ pnpm start
 
 ### 5. Edit Products with Inline Actions
 
-Each product row has **7 action buttons**:
+Each product row has **9 action buttons**:
 
 1. **🧮 Price Calculator** (amber icon):
 
-  - Calculate sale price based on purchase price + profit margin
-  - Dialog to edit purchase price and desired profit
-  - Automatically calculates and applies the sale price
+- Calculate sale price based on purchase price + profit margin
+- Dialog to edit purchase price and desired profit
+- Automatically calculates and applies the sale price
 
 2. **📦 Stock Editor** (emerald icon):
 
-  - Update product stock quantity
-  - Modify minimum stock level
-  - Both values saved together
+- Update product stock quantity
+- Modify minimum stock level
+- Both values saved together
 
 3. **🏷️ Barcode Suffix Editor** (violet icon):
 
-  - Edit the barcode suffix (H, M, MIX, NA, GEN)
-  - Full barcode format: `750000[CODE]-[SUFFIX]`
-  - Preview of new barcode before applying
+- Edit the barcode suffix (H, M, MIX, NA, GEN)
+- Full barcode format: `750000[CODE]-[SUFFIX]`
+- Preview of new barcode before applying
 
 4. **📄 SUNAT Code Editor** (cyan icon):
 
-  - Edit the product SUNAT code
-  - Text input dialog for SUNAT code value
+- Edit the product SUNAT code
+- Text input dialog for SUNAT code value
 
 5. **📁 Category Selector** (orange icon):
 
-  - Select product category from database
-  - Dropdown populated from Supabase categories
-  - Includes "Sin categoría" option
+- Select product category from database
+- Dropdown populated from Supabase categories
+- Includes "Sin categoría" option
 
-6. **👁️ View Details** (primary color icon):
+6. **🩵 Product Editor** (sky blue icon):
 
-  - Open full product details in modal
-  - View and edit all product information
+- Edit product name and description
+- Text input for name (required)
+- Textarea for description (optional)
+- Changes saved directly to database
 
-7. **❌ Delete** (destructive color icon):
-  - Remove product from inventory
-  - Immediate database update
+7. **📄 Supplier/Invoice Manager** (pink icon):
 
-### 6. Dark/Light Mode
+- View invoices assigned to product
+- Assign existing invoices
+- Create new suppliers inline
+- Create new invoices inline
+- Remove invoice assignments
+- Track supplier information (business name, RUC, etc.)
+
+8. **👁️ View Details** (primary color icon):
+
+- Open full product details in modal
+- View and edit all product information
+- Click on image thumbnails to view in full-screen
+
+9. **❌ Delete** (destructive color icon):
+
+- Remove product from inventory
+- Immediate database update
+
+### 6. View Product Images
+
+- **From Product List Table**:
+
+  - Click the product image thumbnail in the "Imagen" column
+  - Opens full-screen image viewer
+
+- **From Product Detail Modal**:
+
+  - Hover over image tiles to see "Ver" indicator
+  - Click any image to open full-screen viewer
+  - Shows image filename as reference
+
+- **Image Viewer Features**:
+  - Full-resolution image display
+  - Navigate with Previous/Next buttons
+  - Use arrow keys (← →) for keyboard navigation
+  - Click thumbnail grid to jump to specific image
+  - Counter shows current position (e.g., "2 / 5")
+  - Press ESC or click close button to exit
+  - Dark background for better visibility
+
+### 7. Manage Suppliers & Invoices
+
+- Click the pink **Supplier/Invoice Manager** button on any product
+- **View Invoices**: See all invoices assigned to the product
+- **Assign Invoice**: Select from existing invoices dropdown
+- **Create Supplier**: Add new supplier information inline (business name, RUC optional)
+- **Create Invoice**: Add new invoice with supplier and invoice number
+- **Remove Invoice**: Delete invoice assignment from product
+
+### 8. Dark/Light Mode
 
 - Click the sun/moon icon in the header to toggle theme
 - Theme preference is saved locally
 
-### 7. Download Barcodes
+### 9. Download Barcodes
 
 - **Individual**: From the product detail, click "Download barcode"
 - **Bulk**: In the list, click "Download Codes" to get a ZIP with all barcodes from the current page
 
-### 8. Export to Excel
+### 10. Export to Excel
 
 - Click "Download Excel" to export all products
 - The file includes all columns and data from database
+
+### 6. Dark/Light Mode
 
 ## 🧪 Testing
 
