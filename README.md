@@ -42,7 +42,14 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - **Table visualization** with configurable columns
 - **Real-time search** by name, internal code, barcode, or brand
 - **Configurable pagination** (10, 20, or 50 products per page)
-- **Product editing** (except images)
+- **Inline product editing** with action icons:
+  - 🧮 **Price Calculator**: Calculate sale price based on cost + profit margin
+  - 📦 **Stock Editor**: Update stock quantity and minimum stock level
+  - 🏷️ **Barcode Suffix Editor**: Change barcode suffix (H, M, MIX, NA, GEN)
+  - 📄 **SUNAT Code Editor**: Edit product SUNAT code
+  - 📁 **Category Selector**: Select category from database categories
+  - 👁️ **View Details**: Open full product details in modal
+  - ❌ **Delete**: Remove product from inventory
 - Instant data updates with Angular Signals
 - Detailed product view in modal
 - Direct integration with Supabase database
@@ -191,12 +198,47 @@ pnpm start
 - Configure **visible columns** with the "Columns" button
 - Adjust **pagination** according to your needs
 
-### 5. Edit Products
+### 5. Edit Products with Inline Actions
 
-- Click the "eye" icon to view details
-- Click "Edit" to modify fields
-- **Images are not editable** by design
-- Changes are saved to database instantly
+Each product row has **7 action buttons**:
+
+1. **🧮 Price Calculator** (amber icon):
+
+  - Calculate sale price based on purchase price + profit margin
+  - Dialog to edit purchase price and desired profit
+  - Automatically calculates and applies the sale price
+
+2. **📦 Stock Editor** (emerald icon):
+
+  - Update product stock quantity
+  - Modify minimum stock level
+  - Both values saved together
+
+3. **🏷️ Barcode Suffix Editor** (violet icon):
+
+  - Edit the barcode suffix (H, M, MIX, NA, GEN)
+  - Full barcode format: `750000[CODE]-[SUFFIX]`
+  - Preview of new barcode before applying
+
+4. **📄 SUNAT Code Editor** (cyan icon):
+
+  - Edit the product SUNAT code
+  - Text input dialog for SUNAT code value
+
+5. **📁 Category Selector** (orange icon):
+
+  - Select product category from database
+  - Dropdown populated from Supabase categories
+  - Includes "Sin categoría" option
+
+6. **👁️ View Details** (primary color icon):
+
+  - Open full product details in modal
+  - View and edit all product information
+
+7. **❌ Delete** (destructive color icon):
+  - Remove product from inventory
+  - Immediate database update
 
 ### 6. Dark/Light Mode
 
