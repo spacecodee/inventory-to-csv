@@ -28,7 +28,6 @@ export class ExcelService {
       'Código lote',
       'Fec. Vencimiento',
       'Cód barras',
-      'Imágenes',
     ];
 
     const data = products.map((p) => [
@@ -52,7 +51,6 @@ export class ExcelService {
       p.codigoLote,
       p.fechaVencimiento,
       p.codigoBarras,
-      p.imagenes.join(', '),
     ]);
 
     const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([headers, ...data]);
