@@ -1,0 +1,82 @@
+<dialog
+  open
+  class="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4 m-0 w-full h-full max-w-full max-h-full"
+  (click)="onClose()"
+  (keydown.escape)="onClose()"
+>
+  <div class="fixed inset-0 bg-black/50"></div>
+  <div
+    class="relative bg-card rounded-xl border border-border shadow-xl w-full max-w-md"
+    (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between p-4 border-b border-border">
+      <h3 class="text-lg font-semibold text-foreground">Editar Stock</h3>
+      <button
+        (click)="onClose()"
+        class="text-muted-foreground hover:text-foreground transition-colors p-1"
+      >
+        <ng-icon hlm name="lucideX" size="sm"></ng-icon>
+      </button>
+    </div>
+
+    <div class="p-4 space-y-4">
+      <div class="text-sm text-muted-foreground">
+        <span class="font-medium text-foreground">{{ product().nombre }}</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label for="stockInput" class="text-xs text-muted-foreground">Stock Actual</label>
+          <input
+            id="stockInput"
+            type="number"
+            [value]="editableStock()"
+            (input)="updateStock($any($event.target).value)"
+            min="0"
+            step="1"
+            class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            placeholder="Ej: 100"
+          />
+        </div>
+        <div class="space-y-1">
+          <label for="stockMinimoInput" class="text-xs text-muted-foreground">Stock Mínimo</label>
+          <input
+            id="stockMinimoInput"
+            type="number"
+            [value]="editableStockMinimo()"
+            (input)="updateStockMinimo($any($event.target).value)"
+            min="0"
+            step="1"
+            class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            placeholder="Ej: 10"
+          />
+        </div>
+      </div>
+
+      @if (isStockLow()) {
+        <div class="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+          <div class="flex items-center gap-2 text-amber-500 text-sm">
+            <ng-icon hlm name="lucidePackage" size="sm"></ng-icon>
+            <span>El stock actual es menor o igual al stock mínimo</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="flex gap-3 p-4 border-t border-border">
+      <button
+        (click)="onClose()"
+        class="flex-1 px-4 py-2 rounded-lg text-sm border border-border hover:bg-secondary/50 transition-colors"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="onApply()"
+        class="flex-1 px-4 py-2 rounded-lg text-sm bg-emerald-600 text-white hover:bg-emerald-500 transition-colors font-medium"
+      >
+        Guardar Stock
+      </button>
+    </div>
+  </div>
+</dialog>

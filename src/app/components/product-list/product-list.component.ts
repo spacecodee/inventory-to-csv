@@ -18,12 +18,21 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { Product } from '../../models/inventory.model';
 import { ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
+import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-calculator-dialog';
 import { ProductDetailComponent } from './product-detail.component';
+import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-dialog';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, HlmIconImports, ProductDetailComponent, FormsModule],
+  imports: [
+    CommonModule,
+    HlmIconImports,
+    ProductDetailComponent,
+    FormsModule,
+    PriceCalculatorDialogComponent,
+    StockEditorDialogComponent,
+  ],
   providers: [
     provideIcons({
       lucideTrash2,
@@ -71,8 +80,6 @@ export class ProductListComponent {
 
   // Price Calculator State
   priceCalcProductId = signal<string | null>(null);
-  profitAmount = signal<number>(0);
-  editablePurchasePrice = signal<number>(0);
 
   priceCalcProduct = computed(() => {
     const id = this.priceCalcProductId();
@@ -80,14 +87,8 @@ export class ProductListComponent {
     return this.products().find((p) => p.id === id) || null;
   });
 
-  calculatedPrice = computed(() => {
-    return this.editablePurchasePrice() + this.profitAmount();
-  });
-
   // Stock Editor State
   stockEditorProductId = signal<string | null>(null);
-  editableStock = signal<number>(0);
-  editableStockMinimo = signal<number>(0);
 
   stockEditorProduct = computed(() => {
     const id = this.stockEditorProductId();
@@ -187,32 +188,20 @@ export class ProductListComponent {
 
   openPriceCalculator(product: Product) {
     this.priceCalcProductId.set(product.id);
-    this.editablePurchasePrice.set(product.precioUnitarioCompra);
-    this.profitAmount.set(0);
   }
 
   closePriceCalculator() {
     this.priceCalcProductId.set(null);
-    this.editablePurchasePrice.set(0);
-    this.profitAmount.set(0);
   }
 
-  updatePurchasePrice(value: number) {
-    this.editablePurchasePrice.set(Number(value) || 0);
-  }
-
-  updateProfitAmount(value: number) {
-    this.profitAmount.set(Number(value) || 0);
-  }
-
-  async applyCalculatedPrice() {
+  async applyCalculatedPrice(data: { precioUnitarioCompra: number; precioUnitarioVenta: number }) {
     const product = this.priceCalcProduct();
     if (!product) return;
 
     const updatedProduct: Product = {
       ...product,
-      precioUnitarioCompra: this.editablePurchasePrice(),
-      precioUnitarioVenta: this.calculatedPrice(),
+      precioUnitarioCompra: data.precioUnitarioCompra,
+      precioUnitarioVenta: data.precioUnitarioVenta,
     };
 
     await this.inventoryService.updateProduct(updatedProduct);
@@ -221,32 +210,20 @@ export class ProductListComponent {
 
   openStockEditor(product: Product) {
     this.stockEditorProductId.set(product.id);
-    this.editableStock.set(product.stock);
-    this.editableStockMinimo.set(product.stockMinimo);
   }
 
   closeStockEditor() {
     this.stockEditorProductId.set(null);
-    this.editableStock.set(0);
-    this.editableStockMinimo.set(0);
   }
 
-  updateStock(value: number) {
-    this.editableStock.set(Number(value) || 0);
-  }
-
-  updateStockMinimo(value: number) {
-    this.editableStockMinimo.set(Number(value) || 0);
-  }
-
-  async applyStockChanges() {
+  async applyStockChanges(data: { stock: number; stockMinimo: number }) {
     const product = this.stockEditorProduct();
     if (!product) return;
 
     const updatedProduct: Product = {
       ...product,
-      stock: this.editableStock(),
-      stockMinimo: this.editableStockMinimo(),
+      stock: data.stock,
+      stockMinimo: data.stockMinimo,
     };
 
     await this.inventoryService.updateProduct(updatedProduct);
