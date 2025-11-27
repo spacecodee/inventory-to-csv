@@ -122,6 +122,12 @@
           @if (columnVisibility()['stock']) {
             <th class="px-3 sm:px-6 py-2 sm:py-3">Stock</th>
           }
+          @if (columnVisibility()['precioCompra']) {
+            <th class="px-3 sm:px-6 py-2 sm:py-3">P. Compra</th>
+          }
+          @if (columnVisibility()['precioVenta']) {
+            <th class="px-3 sm:px-6 py-2 sm:py-3">P. Venta</th>
+          }
           @if (columnVisibility()['codigoInterno']) {
             <th class="px-3 sm:px-6 py-2 sm:py-3">Código</th>
           }
@@ -174,6 +180,16 @@
               @if (columnVisibility()['stock']) {
                 <td class="px-3 sm:px-6 py-3 sm:py-4 text-muted-foreground">{{ product.stock }}</td>
               }
+              @if (columnVisibility()['precioCompra']) {
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-muted-foreground">
+                  S/ {{ product.precioUnitarioCompra | number : '1.2-2' }}
+                </td>
+              }
+              @if (columnVisibility()['precioVenta']) {
+                <td class="px-3 sm:px-6 py-3 sm:py-4 font-medium text-primary">
+                  S/ {{ product.precioUnitarioVenta | number : '1.2-2' }}
+                </td>
+              }
               @if (columnVisibility()['codigoInterno']) {
                 <td class="px-3 sm:px-6 py-3 sm:py-4 text-muted-foreground">
                   {{ product.codigoInterno }}
@@ -187,6 +203,13 @@
               @if (columnVisibility()['acciones']) {
                 <td class="px-3 sm:px-6 py-3 sm:py-4">
                   <div class="flex gap-1 sm:gap-2">
+                    <button
+                      (click)="openPriceCalculator(product)"
+                      class="text-amber-500 hover:text-amber-400 transition-colors p-1"
+                      title="Calcular Precio de Venta"
+                    >
+                      <ng-icon hlm name="lucideCalculator" size="sm"></ng-icon>
+                    </button>
                     <button
                       (click)="viewProduct(product)"
                       class="text-primary hover:text-primary/80 transition-colors p-1"
@@ -261,4 +284,94 @@
     [product]="activeProduct()!"
     (closeModal)="selectedProductId.set(null)"
   ></app-product-detail>
+}
+@if (priceCalcProduct()) {
+  <dialog
+    open
+    class="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4 m-0 w-full h-full max-w-full max-h-full"
+    (click)="closePriceCalculator()"
+    (keydown.escape)="closePriceCalculator()"
+  >
+    <div class="fixed inset-0 bg-black/50"></div>
+    <div
+      class="relative bg-card rounded-xl border border-border shadow-xl w-full max-w-md"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between p-4 border-b border-border">
+        <h3 class="text-lg font-semibold text-foreground">Calcular Precio de Venta</h3>
+        <button
+          (click)="closePriceCalculator()"
+          class="text-muted-foreground hover:text-foreground transition-colors p-1"
+        >
+          <ng-icon hlm name="lucideX" size="sm"></ng-icon>
+        </button>
+      </div>
+
+      <div class="p-4 space-y-4">
+        <div class="text-sm text-muted-foreground">
+          <span class="font-medium text-foreground">{{ priceCalcProduct()!.nombre }}</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label for="purchasePriceInput" class="text-xs text-muted-foreground"
+            >Precio de Compra</label
+            >
+            <input
+              id="purchasePriceInput"
+              type="number"
+              [value]="editablePurchasePrice()"
+              (input)="updatePurchasePrice($any($event.target).value)"
+              min="0"
+              step="0.01"
+              class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+              placeholder="Ej: 10.00"
+            />
+          </div>
+          <div class="space-y-1">
+            <label for="profitInput" class="text-xs text-muted-foreground">Ganancia</label>
+            <input
+              id="profitInput"
+              type="number"
+              [value]="profitAmount()"
+              (input)="updateProfitAmount($any($event.target).value)"
+              min="0"
+              step="0.01"
+              class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+              placeholder="Ej: 5.00"
+            />
+          </div>
+        </div>
+
+        <div class="p-4 bg-primary/10 rounded-lg border border-primary/20">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">Precio Final de Venta</span>
+            <span class="text-2xl font-bold text-primary">
+            S/ {{ calculatedPrice() | number : '1.2-2' }}
+          </span>
+          </div>
+          <div class="text-xs text-muted-foreground mt-1">
+            = S/ {{ editablePurchasePrice() | number : '1.2-2' }} (costo) + S/
+            {{ profitAmount() | number : '1.2-2' }} (ganancia)
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 p-4 border-t border-border">
+        <button
+          (click)="closePriceCalculator()"
+          class="flex-1 px-4 py-2 rounded-lg text-sm border border-border hover:bg-secondary/50 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="applyCalculatedPrice()"
+          class="flex-1 px-4 py-2 rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+        >
+          Aplicar Precio
+        </button>
+      </div>
+    </div>
+  </dialog>
 }

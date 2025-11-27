@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
 import {
+  lucideCalculator,
   lucideCheck,
   lucideDownload,
   lucideEye,
@@ -32,6 +33,7 @@ import { ProductDetailComponent } from './product-detail.component';
       lucideSettings2,
       lucideCheck,
       lucideScanBarcode,
+      lucideCalculator,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -58,10 +60,27 @@ export class ProductListComponent {
     { key: 'marca', label: 'Marca', visible: true, alwaysVisible: false },
     { key: 'descripcion', label: 'Descripción', visible: false, alwaysVisible: false },
     { key: 'stock', label: 'Stock', visible: true, alwaysVisible: false },
+    { key: 'precioCompra', label: 'P. Compra', visible: true, alwaysVisible: false },
+    { key: 'precioVenta', label: 'P. Venta', visible: true, alwaysVisible: false },
     { key: 'codigoInterno', label: 'Código', visible: true, alwaysVisible: false },
     { key: 'codigoBarras', label: 'Código Barras', visible: true, alwaysVisible: false },
     { key: 'acciones', label: 'Acciones', visible: true, alwaysVisible: true },
   ]);
+
+  // Price Calculator State
+  priceCalcProductId = signal<string | null>(null);
+  profitAmount = signal<number>(0);
+  editablePurchasePrice = signal<number>(0);
+
+  priceCalcProduct = computed(() => {
+    const id = this.priceCalcProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
+  });
+
+  calculatedPrice = computed(() => {
+    return this.editablePurchasePrice() + this.profitAmount();
+  });
 
   // Selection State (ID based for reactivity)
   selectedProductId = signal<string | null>(null);
@@ -138,11 +157,11 @@ export class ProductListComponent {
   }
 
   removeProduct(id: string) {
-    this.inventoryService.removeProduct(id);
+    this.inventoryService.removeProduct(id).then(() => undefined);
   }
 
   clearList() {
-    this.inventoryService.clearProducts();
+    this.inventoryService.clearProducts().then(() => undefined);
   }
 
   downloadExcel() {
@@ -151,6 +170,40 @@ export class ProductListComponent {
 
   viewProduct(product: Product) {
     this.selectedProductId.set(product.id);
+  }
+
+  openPriceCalculator(product: Product) {
+    this.priceCalcProductId.set(product.id);
+    this.editablePurchasePrice.set(product.precioUnitarioCompra);
+    this.profitAmount.set(0);
+  }
+
+  closePriceCalculator() {
+    this.priceCalcProductId.set(null);
+    this.editablePurchasePrice.set(0);
+    this.profitAmount.set(0);
+  }
+
+  updatePurchasePrice(value: number) {
+    this.editablePurchasePrice.set(Number(value) || 0);
+  }
+
+  updateProfitAmount(value: number) {
+    this.profitAmount.set(Number(value) || 0);
+  }
+
+  async applyCalculatedPrice() {
+    const product = this.priceCalcProduct();
+    if (!product) return;
+
+    const updatedProduct: Product = {
+      ...product,
+      precioUnitarioCompra: this.editablePurchasePrice(),
+      precioUnitarioVenta: this.calculatedPrice(),
+    };
+
+    await this.inventoryService.updateProduct(updatedProduct);
+    this.closePriceCalculator();
   }
 
   async downloadBarcodes() {
