@@ -7,6 +7,7 @@ import {
   lucideCheck,
   lucideDownload,
   lucideEye,
+  lucidePackage,
   lucideScanBarcode,
   lucideSearch,
   lucideSettings2,
@@ -34,6 +35,7 @@ import { ProductDetailComponent } from './product-detail.component';
       lucideCheck,
       lucideScanBarcode,
       lucideCalculator,
+      lucidePackage,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -80,6 +82,17 @@ export class ProductListComponent {
 
   calculatedPrice = computed(() => {
     return this.editablePurchasePrice() + this.profitAmount();
+  });
+
+  // Stock Editor State
+  stockEditorProductId = signal<string | null>(null);
+  editableStock = signal<number>(0);
+  editableStockMinimo = signal<number>(0);
+
+  stockEditorProduct = computed(() => {
+    const id = this.stockEditorProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
   });
 
   // Selection State (ID based for reactivity)
@@ -204,6 +217,40 @@ export class ProductListComponent {
 
     await this.inventoryService.updateProduct(updatedProduct);
     this.closePriceCalculator();
+  }
+
+  openStockEditor(product: Product) {
+    this.stockEditorProductId.set(product.id);
+    this.editableStock.set(product.stock);
+    this.editableStockMinimo.set(product.stockMinimo);
+  }
+
+  closeStockEditor() {
+    this.stockEditorProductId.set(null);
+    this.editableStock.set(0);
+    this.editableStockMinimo.set(0);
+  }
+
+  updateStock(value: number) {
+    this.editableStock.set(Number(value) || 0);
+  }
+
+  updateStockMinimo(value: number) {
+    this.editableStockMinimo.set(Number(value) || 0);
+  }
+
+  async applyStockChanges() {
+    const product = this.stockEditorProduct();
+    if (!product) return;
+
+    const updatedProduct: Product = {
+      ...product,
+      stock: this.editableStock(),
+      stockMinimo: this.editableStockMinimo(),
+    };
+
+    await this.inventoryService.updateProduct(updatedProduct);
+    this.closeStockEditor();
   }
 
   async downloadBarcodes() {
