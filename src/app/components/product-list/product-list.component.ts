@@ -10,6 +10,7 @@ import {
   lucideFileCode,
   lucideFolderOpen,
   lucidePackage,
+  lucidePercent,
   lucideScanBarcode,
   lucideSearch,
   lucideSettings2,
@@ -21,6 +22,7 @@ import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { Product } from '../../models/inventory.model';
 import { ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
+import { SystemConfigService } from '../../services/system-config.service';
 import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-suffix-dialog';
 import { CategoryEditorDialogComponent } from './category-editor-dialog/category-editor-dialog';
 import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-calculator-dialog';
@@ -57,6 +59,7 @@ import { SunatCodeDialogComponent } from './sunat-code-dialog/sunat-code-dialog'
       lucideTag,
       lucideFileCode,
       lucideFolderOpen,
+      lucidePercent,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -64,8 +67,10 @@ import { SunatCodeDialogComponent } from './sunat-code-dialog/sunat-code-dialog'
 export class ProductListComponent {
   private readonly inventoryService = inject(InventoryService);
   private readonly excelService = inject(ExcelService);
+  private readonly systemConfig = inject(SystemConfigService);
 
   products = this.inventoryService.products;
+  igvPercentage = this.systemConfig.igvPercentage;
 
   // Search State
   searchQuery = signal('');
@@ -233,7 +238,11 @@ export class ProductListComponent {
     this.priceCalcProductId.set(null);
   }
 
-  async applyCalculatedPrice(data: { precioUnitarioCompra: number; precioUnitarioVenta: number }) {
+  async applyCalculatedPrice(data: {
+    precioUnitarioCompra: number;
+    precioUnitarioVenta: number;
+    tieneIgv: boolean;
+  }) {
     const product = this.priceCalcProduct();
     if (!product) return;
 
@@ -241,10 +250,61 @@ export class ProductListComponent {
       ...product,
       precioUnitarioCompra: data.precioUnitarioCompra,
       precioUnitarioVenta: data.precioUnitarioVenta,
+      tieneIgv: data.tieneIgv,
     };
 
     await this.inventoryService.updateProduct(updatedProduct);
     this.closePriceCalculator();
+  }
+
+  // IGV Bulk Update State
+  showIgvDialog = signal(false);
+  igvUpdating = signal(false);
+
+  openIgvDialog() {
+    this.showIgvDialog.set(true);
+  }
+
+  closeIgvDialog() {
+    this.showIgvDialog.set(false);
+  }
+
+  async applyIgvToAllProducts() {
+    this.igvUpdating.set(true);
+    try {
+      const products = this.products();
+      for (const product of products) {
+        if (!product.tieneIgv) {
+          const updatedProduct: Product = {
+            ...product,
+            tieneIgv: true,
+          };
+          await this.inventoryService.updateProduct(updatedProduct);
+        }
+      }
+    } finally {
+      this.igvUpdating.set(false);
+      this.closeIgvDialog();
+    }
+  }
+
+  async removeIgvFromAllProducts() {
+    this.igvUpdating.set(true);
+    try {
+      const products = this.products();
+      for (const product of products) {
+        if (product.tieneIgv) {
+          const updatedProduct: Product = {
+            ...product,
+            tieneIgv: false,
+          };
+          await this.inventoryService.updateProduct(updatedProduct);
+        }
+      }
+    } finally {
+      this.igvUpdating.set(false);
+      this.closeIgvDialog();
+    }
   }
 
   openStockEditor(product: Product) {

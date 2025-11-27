@@ -7,6 +7,16 @@
 
       <div class="flex flex-wrap gap-2 sm:gap-3">
         <button
+          (click)="openIgvDialog()"
+          class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition-colors flex items-center justify-center gap-2"
+          [disabled]="products().length === 0"
+          title="Actualizar IGV de todos los productos"
+        >
+          <ng-icon hlm name="lucidePercent" size="sm"></ng-icon>
+          <span class="hidden sm:inline">IGV ({{ igvPercentage() }}%)</span>
+        </button>
+
+        <button
           (click)="clearList()"
           class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors flex items-center justify-center gap-2"
           [disabled]="products().length === 0"
@@ -347,4 +357,82 @@
     (closeDialog)="closeCategoryEditor()"
     (apply)="applyCategory($event)"
   ></app-category-editor-dialog>
+}
+@if (showIgvDialog()) {
+  <dialog
+    open
+    class="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4 m-0 w-full h-full max-w-full max-h-full"
+    (click)="closeIgvDialog()"
+    (keydown.escape)="closeIgvDialog()"
+  >
+    <div class="fixed inset-0 bg-black/50"></div>
+    <div
+      class="relative bg-card rounded-xl border border-border shadow-xl w-full max-w-md"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between p-4 border-b border-border">
+        <h3 class="text-lg font-semibold text-foreground">Actualizar IGV Masivo</h3>
+        <button
+          (click)="closeIgvDialog()"
+          class="text-muted-foreground hover:text-foreground transition-colors p-1"
+        >
+          <ng-icon hlm name="lucideX" size="sm"></ng-icon>
+        </button>
+      </div>
+
+      <div class="p-4 space-y-4">
+        <div class="text-sm text-muted-foreground">
+          Actualiza el estado de IGV para todos los productos ({{ products().length }} productos).
+        </div>
+
+        <div class="p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+          <div class="flex items-center gap-2">
+            <ng-icon hlm name="lucidePercent" size="sm" class="text-amber-500"></ng-icon>
+            <span class="text-sm font-medium text-foreground"
+            >IGV Actual: {{ igvPercentage() }}%</span
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button
+            (click)="applyIgvToAllProducts()"
+            [disabled]="igvUpdating()"
+            class="px-4 py-3 rounded-lg text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-1"
+          >
+            <span class="font-semibold">Activar IGV</span>
+            <span class="text-xs opacity-80">en todos los productos</span>
+          </button>
+          <button
+            (click)="removeIgvFromAllProducts()"
+            [disabled]="igvUpdating()"
+            class="px-4 py-3 rounded-lg text-sm bg-rose-500 text-white hover:bg-rose-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-1"
+          >
+            <span class="font-semibold">Desactivar IGV</span>
+            <span class="text-xs opacity-80">en todos los productos</span>
+          </button>
+        </div>
+
+        @if (igvUpdating()) {
+          <div class="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <div
+              class="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"
+            ></div>
+            <span>Actualizando productos...</span>
+          </div>
+        }
+      </div>
+
+      <div class="flex gap-3 p-4 border-t border-border">
+        <button
+          (click)="closeIgvDialog()"
+          class="flex-1 px-4 py-2 rounded-lg text-sm border border-border hover:bg-secondary/50 transition-colors"
+          [disabled]="igvUpdating()"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </dialog>
 }
