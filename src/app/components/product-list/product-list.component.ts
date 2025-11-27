@@ -490,4 +490,9 @@ export class ProductListComponent {
     const products = this.paginatedProducts();
     await this.barcodeService.downloadBarcodesWithInfoAsZip(products, this.currentPage());
   }
+
+  async downloadPriceLabels() {
+    const products = this.paginatedProducts();
+    await this.barcodeService.downloadPriceLabelsAsZip(products, this.currentPage());
+  }
 }

@@ -46,6 +46,16 @@
         </button>
 
         <button
+          (click)="downloadPriceLabels()"
+          class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-violet-600 text-white hover:bg-violet-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+          [disabled]="paginatedProducts().length === 0"
+          title="Descargar etiquetas solo con nombre y precio"
+        >
+          <ng-icon hlm name="lucideTag" size="sm"></ng-icon>
+          <span class="hidden sm:inline">Etiquetas</span>
+        </button>
+
+        <button
           (click)="downloadExcel()"
           class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm"
           [disabled]="products().length === 0"

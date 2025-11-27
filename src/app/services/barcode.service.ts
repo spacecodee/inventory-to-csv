@@ -118,6 +118,74 @@ export class BarcodeService {
     this.triggerDownload(content, `${ folderName }.zip`);
   }
 
+  async downloadPriceLabel(product: Product): Promise<void> {
+    const canvas = this.createPriceLabelCanvas(product);
+    canvas.toBlob((pngBlob) => {
+      if (!pngBlob) return;
+      const filename = product.codigoBarras || product.nombre || 'etiqueta';
+      this.triggerDownload(pngBlob, `${ filename }-etiqueta.png`);
+    }, 'image/png');
+  }
+
+  async downloadPriceLabelsAsZip(products: Product[], pageNumber: number): Promise<void> {
+    if (products.length === 0) return;
+
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+
+    const folderName = `etiquetas-page-${ pageNumber }`;
+    const folder = zip.folder(folderName);
+    if (!folder) return;
+
+    for (const product of products) {
+      const pngBlob = await this.generatePriceLabelBlob(product);
+      if (pngBlob) {
+        const filename = product.codigoBarras || product.codigoInterno || product.id;
+        folder.file(`${ filename }-etiqueta.png`, pngBlob);
+      }
+    }
+
+    const content = await zip.generateAsync({ type: 'blob' });
+    this.triggerDownload(content, `${ folderName }.zip`);
+  }
+
+  private generatePriceLabelBlob(product: Product): Promise<Blob | null> {
+    const canvas = this.createPriceLabelCanvas(product);
+    return new Promise((resolve) => {
+      canvas.toBlob((b) => resolve(b), 'image/png');
+    });
+  }
+
+  private createPriceLabelCanvas(product: Product): HTMLCanvasElement {
+    const padding = 20;
+    const canvasWidth = 300;
+    const canvasHeight = 80;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    const ctx = canvas.getContext('2d')!;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 14px Arial, sans-serif';
+    ctx.textAlign = 'center';
+
+    const productName = product.nombre || 'Producto';
+    const maxWidth = canvasWidth - padding * 2;
+    const truncatedName = this.truncateText(ctx, productName, maxWidth);
+    ctx.fillText(truncatedName, canvasWidth / 2, padding + 14);
+
+    const price = product.precioUnitarioVenta || 0;
+    ctx.font = 'bold 24px Arial, sans-serif';
+    ctx.fillStyle = '#000000';
+    ctx.fillText(`S/ ${ price.toFixed(2) }`, canvasWidth / 2, padding + 48);
+
+    return canvas;
+  }
+
   private async generateBarcodeBlob(JsBarcode: any, code: string): Promise<Blob | null> {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     JsBarcode(svg, String(code), {
@@ -216,7 +284,7 @@ export class BarcodeService {
 
     const price = product.precioUnitarioVenta || 0;
     ctx.font = 'bold 18px Arial, sans-serif';
-    ctx.fillStyle = '#16a34a';
+    ctx.fillStyle = '#000000';
     ctx.fillText(`S/ ${ price.toFixed(2) }`, canvasWidth / 2, padding + 38);
 
     const barcodeX = (canvasWidth - barcodeWidth) / 2;

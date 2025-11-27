@@ -137,6 +137,10 @@ export class ProductDetailComponent {
     await this.barcodeService.downloadBarcodeWithInfo(svg, this.product());
   }
 
+  async downloadPriceLabel() {
+    await this.barcodeService.downloadPriceLabel(this.product());
+  }
+
   getValue(key: string): any {
     const val = (this.product() as any)[key];
     if (key === 'imagenes' && Array.isArray(val)) {
