@@ -516,14 +516,6 @@
     (closeDialog)="closeImageViewer()"
   ></app-image-viewer-dialog>
 }
-@if (printProduct()) {
-  <app-print-quantity-dialog
-    [product]="printProduct()!"
-    [printType]="printType()"
-    (confirm)="printType() === 'barcode' ? printProductBarcode($event.product, $event.copies) : printProductLabel($event.product, $event.copies)"
-    (cancel)="closePrintQuantityDialog()"
-  ></app-print-quantity-dialog>
-}
 @if (showIgvDialog()) {
   <dialog
     open

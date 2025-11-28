@@ -34,7 +34,6 @@ import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-su
 import { CategoryEditorDialogComponent } from './category-editor-dialog/category-editor-dialog';
 import { ImageViewerDialogComponent } from './image-viewer-dialog/image-viewer-dialog';
 import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-calculator-dialog';
-import { PrintQuantityDialogComponent } from './print-quantity-dialog/print-quantity-dialog';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductNameDialogComponent } from './product-name-dialog/product-name-dialog';
 import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-dialog';
@@ -57,7 +56,6 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
     SupplierInvoiceDialogComponent,
     ProductNameDialogComponent,
     ImageViewerDialogComponent,
-    PrintQuantityDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -279,17 +277,6 @@ export class ProductListComponent {
   barcodeUpdating = signal(false);
   barcodeUpdateProgress = signal(0);
 
-  // Print per-product state
-  printProductId = signal<string | null>(null);
-  printProductCopies = signal(1);
-  printType = signal<'barcode' | 'label'>('barcode');
-
-  printProduct = computed(() => {
-    const id = this.printProductId();
-    if (!id) return null;
-    return this.products().find((p) => p.id === id) || null;
-  });
-
   downloadExcel() {
     this.excelService.exportToExcel(this.products());
   }
@@ -432,13 +419,11 @@ export class ProductListComponent {
   }
 
   openPrintQuantityDialog(product: Product, type: 'barcode' | 'label') {
-    this.printProductId.set(product.id);
-    this.printProductCopies.set(1);
-    this.printType.set(type);
-  }
-
-  closePrintQuantityDialog() {
-    this.printProductId.set(null);
+    if (type === 'barcode') {
+      this.printProductBarcode(product, 1);
+    } else {
+      this.printProductLabel(product, 1);
+    }
   }
 
   async printProductBarcode(product: Product, copies: number) {
@@ -500,7 +485,6 @@ export class ProductListComponent {
           } else {
             win.print();
           }
-          this.closePrintQuantityDialog();
         } catch (e) {
           console.error(e);
         }
@@ -560,7 +544,6 @@ export class ProductListComponent {
           } else {
             win.print();
           }
-          this.closePrintQuantityDialog();
         } catch (e) {
           console.error(e);
         }
