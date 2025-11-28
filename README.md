@@ -122,6 +122,22 @@ A modern inventory processing and management system that uses **Google Gemini AI
 
 - **CODE128 format** barcode visualization
 - **Compact barcode format & bulk update**: Soporta el nuevo formato compacto `XXXSY` y dispone de una acción en la lista de productos para convertir en masa códigos antiguos al nuevo formato con feedback visual.
+ - **Compact barcode format & bulk update**: Soporta el nuevo formato compacto `XXXSY` y dispone de una acción en la lista de productos para convertir en masa códigos antiguos al nuevo formato con feedback visual.
+ - **Print to 80mm / PDF**: The product list includes an `Imprimir` button which opens a print-ready page formatted for 80mm thermal printers. The printed output contains only the barcode images (no product name) and is optimized for 80mm width.
+
+Printing notes and usage
+
+- The print flow uses a browser print dialog (or PDF export). It generates barcode images (CODE128) sized for an 80mm roll and opens a print preview with `@page { size: 80mm auto }`.
+- Recommended settings: set paper width to **80mm** in the printer dialog and use **scale 100%**. If you choose "Save as PDF" you get a PDF ready for printing or archiving.
+- Steps to print:
+  1. Open the product list and navigate to the page containing the products to print (the feature prints the current page of products).
+  2. Click the **Imprimir** button in the header.
+  3. A new window will open with one barcode per printable label; review the preview and press Print (or Save as PDF).
+
+Notes on printer hardware
+
+- Most thermal receipt printers come in 58mm or 80mm widths. Confirm your printer uses an **80mm** roll; the print view is optimized for that width.
+- For automated/silent printing (no dialog) consider a local print agent that accepts images/PDFs and sends ESC/POS commands directly to the printer. This project provides a browser-first workflow; if you want the local agent, I can add a Node.js example that prints directly to USB/network printers.
 - **3 Download Formats**:
   - **Código**: Only barcode
   - **Código + Info**: Barcode with product name and price
