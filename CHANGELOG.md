@@ -9,17 +9,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### ✨ Added
 
-- **Compact barcode format `XXXSY`**: Nuevo formato de código de barras compacto para ahorrar espacio en etiquetas y facilitar el escaneo. Formato: 3 dígitos aleatorios + sufijo de 1 carácter + dígito de control (ej. `345H7`).
-- **Bulk update button**: Botón en la lista de productos para convertir en masa los códigos antiguos al nuevo formato compacto.
-- **Loading feedback**: Indicador visual (spinner) y notificaciones durante la operación masiva para mostrar progreso y resultado.
+- **Compact barcode format `XXXSY`**: A new compact barcode format to save label space and improve scan reliability. Format: 3 random digits + 1-character suffix + check digit (e.g. `345H7`).
+- **Bulk update button**: Button in the product list to convert legacy barcodes to the new compact format in bulk.
+- **Loading feedback**: Visual indicator (spinner) and toast notifications during the bulk operation to show progress and result.
 
 ### 🔧 Changed
 
-- El generador de códigos (AI) ahora crea códigos en el formato compacto `XXXSY`.
-- El diálogo de sufijos de código de barras usa sufijos de 1 carácter (`MIX` → `X`, `NA` → `N`, `GEN` → `G`).
-- La tabla de productos se recarga automáticamente después de la actualización masiva de códigos.
+- The AI barcode generator now emits codes in the compact `XXXSY` format.
+- The barcode suffix dialog now uses single-character suffixes (`MIX` → `X`, `NA` → `N`, `GEN` → `G`).
+- The product table auto-refreshes after the bulk barcode update completes.
 
 ### 📚 Documentation
 
-- Actualizado `README.md` con detalles del nuevo formato compacto y la funcionalidad de actualización masiva.
+- Updated `README.md` with details about the new compact format and the bulk update functionality.
 
