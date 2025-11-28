@@ -17,7 +17,7 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - **Automatic extraction** of product information using Google Gemini AI
 - Analysis of up to **2 images per product**
 - Brand, category, description, and technical specifications detection
-- Automatic barcode generation in format `750000[RANDOM]-[SUFFIX]`
+  - Automatic barcode generation in compact format `XXXSY` (3 digits + 1-letter suffix + check digit), e.g. `345H7`
 - Assignment of "Generic" brand when no brand is detected
 
 ### 💾 Data Persistence with Supabase
@@ -121,6 +121,7 @@ A modern inventory processing and management system that uses **Google Gemini AI
 ### 📦 Barcode & Label Management
 
 - **CODE128 format** barcode visualization
+- **Compact barcode format & bulk update**: Soporta el nuevo formato compacto `XXXSY` y dispone de una acción en la lista de productos para convertir en masa códigos antiguos al nuevo formato con feedback visual.
 - **3 Download Formats**:
   - **Código**: Only barcode
   - **Código + Info**: Barcode with product name and price
