@@ -169,6 +169,45 @@ export class InventoryService {
     this.productsSignal.set([]);
   }
 
+  async updateAllBarcodesToCompactFormat(): Promise<void> {
+    const products = this.productsSignal();
+    const suffixMap: { [key: string]: string } = {
+      'H': 'H',
+      'M': 'M',
+      'MIX': 'X',
+      'NA': 'N',
+      'GEN': 'G',
+    };
+
+    for (const product of products) {
+      const oldBarcode = product.codigoBarras;
+      if (!oldBarcode) continue;
+
+      const dashIndex = oldBarcode.lastIndexOf('-');
+      let newBarcode = oldBarcode;
+
+      if (dashIndex !== -1) {
+        const oldSuffix = oldBarcode.substring(dashIndex + 1).toUpperCase();
+        const newSuffix = suffixMap[oldSuffix] || 'G';
+        const randomPart = oldBarcode.substring(0, dashIndex).replace('750000', '');
+        const checkDigit = Math.floor(Math.random() * 10);
+        newBarcode = `${ randomPart }${ newSuffix }${ checkDigit }`;
+      }
+
+      const { error } = await this.supabase.client
+      .from('products')
+      .update({ codigo_barras: newBarcode })
+      .eq('id', product.id);
+
+      if (error) {
+        console.error('Error updating barcode for product:', product.id, error);
+        continue;
+      }
+    }
+
+    await this.loadProducts();
+  }
+
   async getProductImages(id: string): Promise<File[]> {
     const { data, error } = await this.supabase.client
     .from('product_images')

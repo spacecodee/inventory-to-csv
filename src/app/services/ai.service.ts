@@ -55,16 +55,20 @@ export class AiService {
         this.categoryService.addCategory(data.categoria, 'Categoría generada por IA');
       }
 
-      const randomCode = Math.floor(1000 + Math.random() * 9000); // 4 digits
+      const randomCode = Math.floor(100 + Math.random() * 900); // 3 digits
+      const checkDigit = Math.floor(Math.random() * 10); // 1 digit for validation
 
-      // Ensure gender is one of the expected values, otherwise default to GEN
       let suffix = (data.genero || 'GEN').toUpperCase();
-      const validSuffixes = ['H', 'M', 'MIX', 'NA', 'GEN'];
-      if (!validSuffixes.includes(suffix)) {
-        suffix = 'GEN';
-      }
+      const suffixMap: { [key: string]: string } = {
+        'H': 'H',
+        'M': 'M',
+        'MIX': 'X',
+        'NA': 'N',
+        'GEN': 'G',
+      };
+      suffix = suffixMap[suffix] || 'G';
 
-      const barcode = `750000${ randomCode }-${ suffix }`;
+      const barcode = `${ randomCode }${ suffix }${ checkDigit }`;
 
       return {
         nombre: data.nombre,

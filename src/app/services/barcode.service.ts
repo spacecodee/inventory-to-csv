@@ -5,6 +5,25 @@ import { Product } from '../models/inventory.model';
   providedIn: 'root',
 })
 export class BarcodeService {
+  convertLegacyBarcodeToCompact(legacyBarcode: string): string {
+    const dashIndex = legacyBarcode.lastIndexOf('-');
+    if (dashIndex === -1) return legacyBarcode;
+
+    const suffixMap: { [key: string]: string } = {
+      'H': 'H',
+      'M': 'M',
+      'MIX': 'X',
+      'NA': 'N',
+      'GEN': 'G',
+    };
+
+    const oldSuffix = legacyBarcode.substring(dashIndex + 1).toUpperCase();
+    const newSuffix = suffixMap[oldSuffix] || 'G';
+    const randomPart = legacyBarcode.substring(0, dashIndex).replace('750000', '');
+    const checkDigit = Math.floor(Math.random() * 10);
+
+    return `${ randomPart }${ newSuffix }${ checkDigit }`;
+  }
   async renderBarcodeToSvg(element: SVGElement, value: string): Promise<void> {
     const JsBarcode = (await import('jsbarcode')).default || (await import('jsbarcode'));
     while (element.firstChild) element.firstChild.remove();

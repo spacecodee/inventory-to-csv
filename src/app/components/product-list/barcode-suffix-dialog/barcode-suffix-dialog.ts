@@ -17,9 +17,9 @@ import { Product } from '../../../models/inventory.model';
 export const BARCODE_SUFFIXES = [
   { value: 'H', label: 'H - Hombre' },
   { value: 'M', label: 'M - Mujer' },
-  { value: 'MIX', label: 'MIX - Unisex' },
-  { value: 'NA', label: 'NA - No Aplica' },
-  { value: 'GEN', label: 'GEN - Genérico' },
+  { value: 'X', label: 'X - Unisex' },
+  { value: 'N', label: 'N - No Aplica' },
+  { value: 'G', label: 'G - Genérico' },
 ];
 
 @Component({
@@ -40,20 +40,19 @@ export class BarcodeSuffixDialogComponent implements OnInit {
 
   barcodeBase = computed(() => {
     const barcode = this.product().codigoBarras;
-    const dashIndex = barcode.lastIndexOf('-');
-    if (dashIndex === -1) return barcode;
-    return barcode.substring(0, dashIndex);
+    if (barcode.length <= 2) return barcode;
+    return barcode.substring(0, barcode.length - 2);
   });
 
   currentSuffix = computed(() => {
     const barcode = this.product().codigoBarras;
-    const dashIndex = barcode.lastIndexOf('-');
-    if (dashIndex === -1) return 'GEN';
-    return barcode.substring(dashIndex + 1);
+    if (barcode.length <= 2) return 'G';
+    return barcode[barcode.length - 2];
   });
 
   newBarcode = computed(() => {
-    return `${ this.barcodeBase() }-${ this.selectedSuffix() }`;
+    const checkDigit = Math.floor(Math.random() * 10);
+    return `${ this.barcodeBase() }${ this.selectedSuffix() }${ checkDigit }`;
   });
 
   ngOnInit() {

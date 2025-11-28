@@ -12,6 +12,7 @@ import {
   lucideFileText,
   lucideFolderOpen,
   lucideImage,
+  lucideLoader,
   lucidePackage,
   lucidePercent,
   lucideScanBarcode,
@@ -26,6 +27,7 @@ import { Product } from '../../models/inventory.model';
 import { BarcodeService } from '../../services/barcode.service';
 import { ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
+import { NotificationService } from '../../services/notification.service';
 import { SystemConfigService } from '../../services/system-config.service';
 import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-suffix-dialog';
 import { CategoryEditorDialogComponent } from './category-editor-dialog/category-editor-dialog';
@@ -73,6 +75,7 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
       lucideFileText,
       lucideEdit,
       lucideImage,
+      lucideLoader,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -82,6 +85,7 @@ export class ProductListComponent {
   private readonly excelService = inject(ExcelService);
   private readonly systemConfig = inject(SystemConfigService);
   private readonly barcodeService = inject(BarcodeService);
+  private readonly notificationService = inject(NotificationService);
 
   products = this.inventoryService.products;
   igvPercentage = this.systemConfig.igvPercentage;
@@ -267,8 +271,39 @@ export class ProductListComponent {
     this.inventoryService.clearProducts().then(() => undefined);
   }
 
+  // Barcode Update State
+  barcodeUpdating = signal(false);
+  barcodeUpdateProgress = signal(0);
+
   downloadExcel() {
     this.excelService.exportToExcel(this.products());
+  }
+
+  async updateAllBarcodesToCompact() {
+    const confirmed = window.confirm(
+      'Esta acción convertirá todos los códigos de barras al formato compacto. ¿Estás seguro?'
+    );
+    if (!confirmed) return;
+
+    this.barcodeUpdating.set(true);
+    this.barcodeUpdateProgress.set(0);
+
+    try {
+      await this.inventoryService.updateAllBarcodesToCompactFormat();
+      this.notificationService.success(
+        'Códigos de barras actualizados',
+        'Todos los códigos han sido convertidos al formato compacto'
+      );
+    } catch (error) {
+      console.error('Error updating barcodes:', error);
+      this.notificationService.error(
+        'Error al actualizar códigos',
+        'Ocurrió un error durante la actualización'
+      );
+    } finally {
+      this.barcodeUpdating.set(false);
+      this.barcodeUpdateProgress.set(0);
+    }
   }
 
   viewProduct(product: Product) {
