@@ -15,6 +15,7 @@ import {
   lucideLoader,
   lucidePackage,
   lucidePercent,
+  lucidePrinter,
   lucideScanBarcode,
   lucideSearch,
   lucideSettings2,
@@ -76,6 +77,7 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
       lucideEdit,
       lucideImage,
       lucideLoader,
+      lucidePrinter,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -277,6 +279,72 @@ export class ProductListComponent {
 
   downloadExcel() {
     this.excelService.exportToExcel(this.products());
+  }
+
+  async printBarcodesToPdf() {
+    const products = this.paginatedProducts();
+    if (!products || products.length === 0) return;
+
+    this.notificationService.info('Preparing printable document...');
+
+    try {
+      const JsBarcodeModule = await import('jsbarcode');
+      const JsBarcode = (JsBarcodeModule as any).default || JsBarcodeModule;
+
+      const images: string[] = [];
+      for (const p of products) {
+        const code = String(p.codigoBarras || p.codigoInterno || p.id || '');
+        const canvas = document.createElement('canvas');
+        JsBarcode(canvas, code, {
+          format: 'CODE128',
+          displayValue: true,
+          fontSize: 12,
+          height: 60,
+          margin: 0,
+        });
+        const dataUrl = canvas.toDataURL('image/png');
+        images.push(dataUrl);
+      }
+
+      const win = window.open('', '_blank');
+      if (!win) {
+        this.notificationService.error('Unable to open print window');
+        return;
+      }
+
+      const style = `
+        <style>
+          @page { size: 80mm auto; margin: 0; }
+          html, body { margin: 0; padding: 4mm; font-family: Arial, Helvetica, sans-serif; }
+          .label { width: 80mm; page-break-after: always; display:flex; align-items:center; justify-content:center; }
+          img.bar { width: 72mm; height: auto; display:block; }
+        </style>
+      `;
+
+      let bodyHtml = '';
+      for (let i = 0; i < images.length; i++) {
+        bodyHtml += `<div class="label"><img class="bar" src="${images[i]}" /></div>`;
+      }
+
+      win.document.open();
+      win.document.write(`<html><head><title>Print Barcodes</title>${style}</head><body>${bodyHtml}</body></html>`);
+      win.document.close();
+
+      // give browser a moment to render images
+      setTimeout(() => {
+        try {
+          win.focus();
+          win.print();
+          // do not immediately close — let user control
+        } catch (e) {
+          console.error(e);
+        }
+      }, 600);
+
+    } catch (err: any) {
+      console.error('Print generation error', err);
+      this.notificationService.error('Error preparing print', err?.message || String(err));
+    }
   }
 
   async updateAllBarcodesToCompact() {
