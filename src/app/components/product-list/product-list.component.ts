@@ -297,9 +297,9 @@ export class ProductListComponent {
         const canvas = document.createElement('canvas');
         JsBarcode(canvas, code, {
           format: 'CODE128',
-          displayValue: true,
-          fontSize: 12,
-          height: 60,
+          displayValue: false,
+          fontSize: 10,
+          height: 40,
           margin: 0,
         });
         const dataUrl = canvas.toDataURL('image/png');
@@ -314,10 +314,10 @@ export class ProductListComponent {
 
       const style = `
         <style>
-          @page { size: 80mm auto; margin: 0; }
+          @page { size: 50mm 80mm; margin: 0; }
           html, body { margin: 0; padding: 4mm; font-family: Arial, Helvetica, sans-serif; }
-          .label { width: 80mm; page-break-after: always; display:flex; align-items:center; justify-content:center; }
-          img.bar { width: 72mm; height: auto; display:block; }
+          .label { width: 50mm; height: 80mm; page-break-after: always; display:flex; align-items:center; justify-content:center; }
+          img.bar { width: 30mm; height: 50mm; display:block; }
         </style>
       `;
 
