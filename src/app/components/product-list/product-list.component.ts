@@ -359,6 +359,65 @@ export class ProductListComponent {
     }
   }
 
+  async printLabels() {
+    const products = this.paginatedProducts();
+    if (!products || products.length === 0) return;
+
+    this.notificationService.info('Preparing labels...');
+
+    try {
+      const win = window.open('', '_blank');
+      if (!win) {
+        this.notificationService.error('Unable to open print window');
+        return;
+      }
+
+      const style = `
+        <style>
+          @page { size: 40mm 60mm; margin: 0; }
+          @page { margin: 0; }
+          html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
+          .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 1mm; gap: 1mm; }
+          .label-name { font-size: 11px; font-weight: bold; width: 38mm; word-break: break-word; }
+          .label-price { font-size: 14px; font-weight: bold; color: #000; }
+        </style>
+        <style media="print">
+          @page { margin: 0; }
+          body { margin: 0; padding: 0; }
+          html { margin: 0; padding: 0; }
+        </style>
+      `;
+
+      let bodyHtml = '';
+      for (const p of products) {
+        const nombre = (p.nombre || '').toString();
+        const precio = (p.precioUnitarioVenta || 0).toFixed(2);
+        bodyHtml += `<div class="label"><div class="label-name">${nombre}</div><div class="label-price">S/. ${precio}</div></div>`;
+      }
+
+      win.document.open();
+      win.document.write(`<html><head><title>Print Labels</title>${style}</head><body>${bodyHtml}</body></html>`);
+      win.document.close();
+
+      setTimeout(() => {
+        try {
+          win.focus();
+          if ((win as any).print) {
+            (win as any).print();
+          } else {
+            win.print();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 600);
+
+    } catch (err: any) {
+      console.error('Print labels error', err);
+      this.notificationService.error('Error preparing labels', err?.message || String(err));
+    }
+  }
+
   async updateAllBarcodesToCompact() {
     const confirmed = window.confirm(
       'Esta acción convertirá todos los códigos de barras al formato compacto. ¿Estás seguro?'
