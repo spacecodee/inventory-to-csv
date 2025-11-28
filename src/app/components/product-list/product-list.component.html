@@ -374,6 +374,20 @@
                       <ng-icon hlm name="lucideEdit" size="sm"></ng-icon>
                     </button>
                     <button
+                      (click)="openPrintQuantityDialog(product, 'barcode')"
+                      class="text-slate-700 hover:text-slate-600 transition-colors p-1"
+                      title="Imprimir Codigo de Barras"
+                    >
+                      <ng-icon hlm name="lucidePrinter" size="sm"></ng-icon>
+                    </button>
+                    <button
+                      (click)="openPrintQuantityDialog(product, 'label')"
+                      class="text-orange-600 hover:text-orange-500 transition-colors p-1"
+                      title="Imprimir Etiqueta"
+                    >
+                      <ng-icon hlm name="lucidePrinter" size="sm"></ng-icon>
+                    </button>
+                    <button
                       (click)="viewProduct(product)"
                       class="text-primary hover:text-primary/80 transition-colors p-1"
                       title="Ver Detalle"
@@ -501,6 +515,14 @@
     [product]="imageViewerProduct()!"
     (closeDialog)="closeImageViewer()"
   ></app-image-viewer-dialog>
+}
+@if (printProduct()) {
+  <app-print-quantity-dialog
+    [product]="printProduct()!"
+    [printType]="printType()"
+    (confirm)="printType() === 'barcode' ? printProductBarcode($event.product, $event.copies) : printProductLabel($event.product, $event.copies)"
+    (cancel)="closePrintQuantityDialog()"
+  ></app-print-quantity-dialog>
 }
 @if (showIgvDialog()) {
   <dialog

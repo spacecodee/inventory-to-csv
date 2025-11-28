@@ -34,6 +34,7 @@ import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-su
 import { CategoryEditorDialogComponent } from './category-editor-dialog/category-editor-dialog';
 import { ImageViewerDialogComponent } from './image-viewer-dialog/image-viewer-dialog';
 import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-calculator-dialog';
+import { PrintQuantityDialogComponent } from './print-quantity-dialog/print-quantity-dialog';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductNameDialogComponent } from './product-name-dialog/product-name-dialog';
 import { StockEditorDialogComponent } from './stock-editor-dialog/stock-editor-dialog';
@@ -56,6 +57,7 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
     SupplierInvoiceDialogComponent,
     ProductNameDialogComponent,
     ImageViewerDialogComponent,
+    PrintQuantityDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -277,6 +279,17 @@ export class ProductListComponent {
   barcodeUpdating = signal(false);
   barcodeUpdateProgress = signal(0);
 
+  // Print per-product state
+  printProductId = signal<string | null>(null);
+  printProductCopies = signal(1);
+  printType = signal<'barcode' | 'label'>('barcode');
+
+  printProduct = computed(() => {
+    const id = this.printProductId();
+    if (!id) return null;
+    return this.products().find((p) => p.id === id) || null;
+  });
+
   downloadExcel() {
     this.excelService.exportToExcel(this.products());
   }
@@ -417,6 +430,148 @@ export class ProductListComponent {
       this.notificationService.error('Error preparing labels', err?.message || String(err));
     }
   }
+
+  openPrintQuantityDialog(product: Product, type: 'barcode' | 'label') {
+    this.printProductId.set(product.id);
+    this.printProductCopies.set(1);
+    this.printType.set(type);
+  }
+
+  closePrintQuantityDialog() {
+    this.printProductId.set(null);
+  }
+
+  async printProductBarcode(product: Product, copies: number) {
+    if (copies <= 0) return;
+
+    this.notificationService.info(`Preparing ${copies} barcode(s)...`);
+
+    try {
+      const JsBarcodeModule = await import('jsbarcode');
+      const JsBarcode = (JsBarcodeModule as any).default || JsBarcodeModule;
+
+      const win = window.open('', '_blank');
+      if (!win) {
+        this.notificationService.error('Unable to open print window');
+        return;
+      }
+
+      const style = `
+        <style>
+          @page { size: 40mm 60mm; margin: 0; }
+          @page { margin: 0; }
+          html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
+          .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 1mm; gap: 1mm; }
+          img.bar { width: 38mm; height: 10mm; display:block; }
+          .code-text { font-size: 8px; font-family: monospace; text-align: center; word-break: break-all; width: 38mm; }
+        </style>
+        <style media="print">
+          @page { margin: 0; }
+          body { margin: 0; padding: 0; }
+          html { margin: 0; padding: 0; }
+        </style>
+      `;
+
+      const code = String(product.codigoBarras || product.codigoInterno || product.id || '');
+      const canvas = document.createElement('canvas');
+      JsBarcode(canvas, code, {
+        format: 'CODE128',
+        displayValue: false,
+        fontSize: 10,
+        height: 25,
+        margin: 0,
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+
+      let bodyHtml = '';
+      for (let i = 0; i < copies; i++) {
+        bodyHtml += `<div class="label"><img class="bar" src="${dataUrl}" /><div class="code-text">${code}</div></div>`;
+      }
+
+      win.document.open();
+      win.document.write(`<html><head><title>Print Barcode</title>${style}</head><body>${bodyHtml}</body></html>`);
+      win.document.close();
+
+      setTimeout(() => {
+        try {
+          win.focus();
+          if ((win as any).print) {
+            (win as any).print();
+          } else {
+            win.print();
+          }
+          this.closePrintQuantityDialog();
+        } catch (e) {
+          console.error(e);
+        }
+      }, 600);
+
+    } catch (err: any) {
+      console.error('Print barcode error', err);
+      this.notificationService.error('Error preparing barcode', err?.message || String(err));
+    }
+  }
+
+  async printProductLabel(product: Product, copies: number) {
+    if (copies <= 0) return;
+
+    this.notificationService.info(`Preparing ${copies} label(s)...`);
+
+    try {
+      const win = window.open('', '_blank');
+      if (!win) {
+        this.notificationService.error('Unable to open print window');
+        return;
+      }
+
+      const style = `
+        <style>
+          @page { size: 40mm 60mm; margin: 0; }
+          @page { margin: 0; }
+          html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
+          .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 1mm; gap: 1mm; }
+          .label-name { font-size: 11px; font-weight: bold; width: 38mm; word-break: break-word; }
+          .label-price { font-size: 14px; font-weight: bold; color: #000; }
+        </style>
+        <style media="print">
+          @page { margin: 0; }
+          body { margin: 0; padding: 0; }
+          html { margin: 0; padding: 0; }
+        </style>
+      `;
+
+      const nombre = (product.nombre || '').toString();
+      const precio = (product.precioUnitarioVenta || 0).toFixed(2);
+
+      let bodyHtml = '';
+      for (let i = 0; i < copies; i++) {
+        bodyHtml += `<div class="label"><div class="label-name">${nombre}</div><div class="label-price">S/. ${precio}</div></div>`;
+      }
+
+      win.document.open();
+      win.document.write(`<html><head><title>Print Label</title>${style}</head><body>${bodyHtml}</body></html>`);
+      win.document.close();
+
+      setTimeout(() => {
+        try {
+          win.focus();
+          if ((win as any).print) {
+            (win as any).print();
+          } else {
+            win.print();
+          }
+          this.closePrintQuantityDialog();
+        } catch (e) {
+          console.error(e);
+        }
+      }, 600);
+
+    } catch (err: any) {
+      console.error('Print label error', err);
+      this.notificationService.error('Error preparing label', err?.message || String(err));
+    }
+  }
+
 
   async updateAllBarcodesToCompact() {
     const confirmed = window.confirm(
