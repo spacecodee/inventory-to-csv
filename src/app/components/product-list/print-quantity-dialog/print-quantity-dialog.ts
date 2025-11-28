@@ -36,6 +36,14 @@ export class PrintQuantityDialogComponent implements OnInit {
     this.copies.set(stock);
   }
 
+  updateCopies(event: Event) {
+    const value = parseInt((event.target as HTMLInputElement).value, 10);
+    if (!isNaN(value) && value > 0) {
+      const max = this.product()?.stock || 1;
+      this.copies.set(Math.min(value, max));
+    }
+  }
+
   onConfirm() {
     const product = this.product();
     if (product && this.copies() > 0) {

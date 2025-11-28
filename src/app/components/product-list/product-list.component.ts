@@ -459,8 +459,7 @@ export class ProductListComponent {
       const style = `
         <style>
           @page { size: 40mm 60mm; margin: 0; }
-          @page { margin: 0; }
-          html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
+          html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
           .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 1mm; gap: 1mm; }
           img.bar { width: 38mm; height: 10mm; display:block; }
           .code-text { font-size: 8px; font-family: monospace; text-align: center; word-break: break-all; width: 38mm; }
@@ -527,8 +526,7 @@ export class ProductListComponent {
       const style = `
         <style>
           @page { size: 40mm 60mm; margin: 0; }
-          @page { margin: 0; }
-          html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
+          html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
           .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 1mm; gap: 1mm; }
           .label-name { font-size: 11px; font-weight: bold; width: 38mm; word-break: break-word; }
           .label-price { font-size: 14px; font-weight: bold; color: #000; }
