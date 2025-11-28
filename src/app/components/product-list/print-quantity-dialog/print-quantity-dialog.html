@@ -1,0 +1,63 @@
+<dialog
+  open
+  class="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4 m-0 w-full h-full max-w-full max-h-full"
+  (click)="onClose()"
+  (keydown.escape)="onClose()"
+>
+  <div class="fixed inset-0 bg-black/50"></div>
+  <div
+    class="relative bg-card rounded-xl border border-border shadow-xl w-full max-w-md"
+    (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between p-4 border-b border-border">
+      <h3 class="text-lg font-semibold text-foreground">
+        {{ printType() === 'barcode' ? 'Imprimir Códigos de Barras' : 'Imprimir Etiquetas' }}
+      </h3>
+      <button
+        (click)="onClose()"
+        class="text-muted-foreground hover:text-foreground transition-colors p-1"
+      >
+        <ng-icon hlm name="lucideX" size="sm"></ng-icon>
+      </button>
+    </div>
+
+    <div class="p-4 space-y-4">
+      <div class="text-sm text-muted-foreground">
+        <span class="font-medium text-foreground">{{ product()?.nombre }}</span>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-xs text-muted-foreground">Cantidad a Imprimir</label>
+        <div class="text-lg font-mono text-foreground bg-secondary/20 px-3 py-2 rounded-lg font-medium">
+          {{ copies() }} unidades
+        </div>
+        <p class="text-xs text-muted-foreground">Stock disponible: {{ product()?.stock || 0 }}</p>
+      </div>
+
+      <div class="p-4 bg-primary/10 rounded-lg border border-primary/20">
+        <div class="flex flex-col gap-1">
+          <span class="text-xs text-muted-foreground">Total a Imprimir</span>
+          <span class="text-xl font-mono font-bold text-primary">
+            {{ copies() }} {{ printType() === 'barcode' ? 'códigos' : 'etiquetas' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-3 p-4 border-t border-border">
+      <button
+        (click)="onClose()"
+        class="flex-1 px-4 py-2 rounded-lg text-sm border border-border hover:bg-secondary/50 transition-colors"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="onConfirm()"
+        class="flex-1 px-4 py-2 rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+      >
+        Imprimir
+      </button>
+    </div>
+  </div>
+</dialog>
