@@ -314,16 +314,19 @@ export class ProductListComponent {
 
       const style = `
         <style>
-          @page { size: 50mm 80mm; margin: 0; }
-          html, body { margin: 0; padding: 4mm; font-family: Arial, Helvetica, sans-serif; }
-          .label { width: 50mm; height: 80mm; page-break-after: always; display:flex; align-items:center; justify-content:center; }
-          img.bar { width: 30mm; height: 50mm; display:block; }
+          @page { size: 40mm 60mm; margin: 0; }
+          html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
+          .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 3mm; }
+          img.bar { width: 28mm; height: 45mm; display:block; }
+          .code-text { font-size: 8px; font-family: monospace; text-align: center; word-break: break-all; width: 38mm; }
         </style>
       `;
 
       let bodyHtml = '';
       for (let i = 0; i < images.length; i++) {
-        bodyHtml += `<div class="label"><img class="bar" src="${images[i]}" /></div>`;
+        const p = products[i];
+        const code = String(p.codigoBarras || p.codigoInterno || p.id || '');
+        bodyHtml += `<div class="label"><img class="bar" src="${images[i]}" /><div class="code-text">${code}</div></div>`;
       }
 
       win.document.open();
