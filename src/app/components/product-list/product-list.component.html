@@ -170,7 +170,7 @@
         >
         <tr>
           @if (columnVisibility()['imagen']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Imagen</th>
+            <th class="sticky left-0 z-10 bg-secondary/50 px-3 sm:px-6 py-2 sm:py-3">Imagen</th>
           }
           @if (columnVisibility()['nombre']) {
             <th class="px-3 sm:px-6 py-2 sm:py-3">Nombre</th>
@@ -220,7 +220,7 @@
           @for (product of paginatedProducts(); track product.id) {
             <tr class="bg-card border-b border-border hover:bg-secondary/20 transition-colors">
               @if (columnVisibility()['imagen']) {
-                <td class="px-3 sm:px-6 py-3 sm:py-4">
+                <td class="sticky left-0 z-10 bg-card px-3 sm:px-6 py-3 sm:py-4">
                   <button
                     (click)="openImageViewer(product)"
                     class="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-secondary overflow-hidden flex items-center justify-center text-[10px] sm:text-xs text-muted-foreground hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer"
