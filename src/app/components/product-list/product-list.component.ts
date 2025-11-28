@@ -299,7 +299,7 @@ export class ProductListComponent {
           format: 'CODE128',
           displayValue: false,
           fontSize: 10,
-          height: 25,
+          height: 15,
           margin: 0,
         });
         const dataUrl = canvas.toDataURL('image/png');
@@ -318,7 +318,7 @@ export class ProductListComponent {
           @page { margin: 0; }
           html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
           .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 3mm; }
-          img.bar { width: 45mm; height: 18mm; display:block; }
+          img.bar { width: 38mm; height: 10mm; display:block; }
           .code-text { font-size: 8px; font-family: monospace; text-align: center; word-break: break-all; width: 38mm; }
         </style>
         <style media="print">
