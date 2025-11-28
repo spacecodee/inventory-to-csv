@@ -315,10 +315,16 @@ export class ProductListComponent {
       const style = `
         <style>
           @page { size: 40mm 60mm; margin: 0; }
+          @page { margin: 0; }
           html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
           .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 3mm; }
-          img.bar { width: 28mm; height: 45mm; display:block; }
+          img.bar { width: 45mm; height: 28mm; display:block; }
           .code-text { font-size: 8px; font-family: monospace; text-align: center; word-break: break-all; width: 38mm; }
+        </style>
+        <style media="print">
+          @page { margin: 0; }
+          body { margin: 0; padding: 0; }
+          html { margin: 0; padding: 0; }
         </style>
       `;
 
@@ -333,12 +339,15 @@ export class ProductListComponent {
       win.document.write(`<html><head><title>Print Barcodes</title>${style}</head><body>${bodyHtml}</body></html>`);
       win.document.close();
 
-      // give browser a moment to render images
       setTimeout(() => {
         try {
           win.focus();
-          win.print();
-          // do not immediately close — let user control
+          const printSettings = { margins: { top: 0, bottom: 0, left: 0, right: 0 }, headerFooterEnabled: false };
+          if ((win as any).print) {
+            (win as any).print();
+          } else {
+            win.print();
+          }
         } catch (e) {
           console.error(e);
         }
