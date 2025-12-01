@@ -1,12 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { provideIcons } from '@ng-icons/core';
 import {
   lucideArrowDown,
   lucideArrowUp,
   lucideArrowUpDown,
   lucideCalculator,
+  lucideCalendar,
   lucideCheck,
   lucideDownload,
   lucideEdit,
@@ -87,18 +97,21 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
       lucideArrowDown,
       lucideArrowUpDown,
       lucideFilter,
+      lucideCalendar,
     }),
   ],
   templateUrl: './product-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductListComponent {
+export class ProductListComponent implements OnInit {
   private readonly inventoryService = inject(InventoryService);
   private readonly excelService = inject(ExcelService);
   private readonly systemConfig = inject(SystemConfigService);
   private readonly barcodeService = inject(BarcodeService);
   private readonly notificationService = inject(NotificationService);
   private readonly printService = inject(PrintService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   products = this.inventoryService.products;
   igvPercentage = this.systemConfig.igvPercentage;
@@ -118,6 +131,10 @@ export class ProductListComponent {
     marca: '',
     codigoInterno: '',
     codigoBarras: '',
+    createdAtFrom: '',
+    createdAtTo: '',
+    updatedAtFrom: '',
+    updatedAtTo: '',
   });
 
   isDropdownOpen = signal(false);
@@ -136,8 +153,85 @@ export class ProductListComponent {
     { key: 'codigoBarras', label: 'Código Barras', visible: true, alwaysVisible: false },
     { key: 'factura', label: 'Factura', visible: true, alwaysVisible: false },
     { key: 'proveedor', label: 'Proveedor', visible: true, alwaysVisible: false },
+    { key: 'createdAt', label: 'Creado', visible: true, alwaysVisible: false },
+    { key: 'updatedAt', label: 'Actualizado', visible: true, alwaysVisible: false },
     { key: 'acciones', label: 'Acciones', visible: true, alwaysVisible: true },
   ]);
+
+  private isUpdatingFromUrl = false;
+
+  constructor() {
+    effect(() => {
+      if (this.isUpdatingFromUrl) return;
+
+      const params: Record<string, string> = {};
+
+      const page = this.currentPage();
+      if (page > 1) params['page'] = String(page);
+
+      const perPage = this.itemsPerPage();
+      if (perPage !== 10) params['perPage'] = String(perPage);
+
+      const search = this.searchQuery();
+      if (search) params['search'] = search;
+
+      const sortCol = this.sortColumn();
+      const sortDir = this.sortDirection();
+      if (sortCol) {
+        params['sort'] = sortCol;
+        params['order'] = sortDir;
+      }
+
+      const filters = this.columnFilters();
+      for (const [key, value] of Object.entries(filters)) {
+        if (value) params[`filter_${ key }`] = value;
+      }
+
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: params,
+        queryParamsHandling: 'replace',
+        replaceUrl: true,
+      });
+    });
+  }
+
+  ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      this.isUpdatingFromUrl = true;
+
+      if (params['page']) this.currentPage.set(Number(params['page']));
+      if (params['perPage']) this.itemsPerPage.set(Number(params['perPage']));
+      if (params['search']) this.searchQuery.set(params['search']);
+      if (params['sort']) this.sortColumn.set(params['sort']);
+      if (params['order']) this.sortDirection.set(params['order'] as 'asc' | 'desc');
+
+      const filters: Record<string, string> = {
+        nombre: '',
+        categoria: '',
+        marca: '',
+        codigoInterno: '',
+        codigoBarras: '',
+        createdAtFrom: '',
+        createdAtTo: '',
+        updatedAtFrom: '',
+        updatedAtTo: '',
+      };
+
+      for (const key of Object.keys(params)) {
+        if (key.startsWith('filter_')) {
+          const filterKey = key.replace('filter_', '');
+          filters[filterKey] = params[key];
+        }
+      }
+
+      this.columnFilters.set(filters);
+
+      setTimeout(() => {
+        this.isUpdatingFromUrl = false;
+      }, 0);
+    });
+  }
 
   // Price Calculator State
   priceCalcProductId = signal<string | null>(null);
@@ -261,6 +355,25 @@ export class ProductListComponent {
       products = products.filter((p) => p.codigoBarras.toLowerCase().includes(filterValue));
     }
 
+    if (filters['createdAtFrom']) {
+      const fromDate = new Date(filters['createdAtFrom']);
+      products = products.filter((p) => new Date(p.createdAt) >= fromDate);
+    }
+    if (filters['createdAtTo']) {
+      const toDate = new Date(filters['createdAtTo']);
+      toDate.setHours(23, 59, 59, 999);
+      products = products.filter((p) => new Date(p.createdAt) <= toDate);
+    }
+    if (filters['updatedAtFrom']) {
+      const fromDate = new Date(filters['updatedAtFrom']);
+      products = products.filter((p) => new Date(p.updatedAt) >= fromDate);
+    }
+    if (filters['updatedAtTo']) {
+      const toDate = new Date(filters['updatedAtTo']);
+      toDate.setHours(23, 59, 59, 999);
+      products = products.filter((p) => new Date(p.updatedAt) <= toDate);
+    }
+
     if (sortCol) {
       products = [...products].sort((a, b) => {
         const valA = this.getSortValue(a, sortCol);
@@ -285,6 +398,43 @@ export class ProductListComponent {
     const start = (this.currentPage() - 1) * this.itemsPerPage();
     const end = start + this.itemsPerPage();
     return products.slice(start, end);
+  });
+
+  totalPages = computed(() => {
+    return Math.ceil(this.filteredProducts().length / this.itemsPerPage());
+  });
+
+  pageNumbers = computed(() => {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const pages: (number | string)[] = [];
+
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+
+      if (current > 3) {
+        pages.push('...');
+      }
+
+      const start = Math.max(2, current - 1);
+      const end = Math.min(total - 1, current + 1);
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (current < total - 2) {
+        pages.push('...');
+      }
+
+      pages.push(total);
+    }
+
+    return pages;
   });
 
   columnVisibility = computed(() => {
@@ -315,6 +465,10 @@ export class ProductListComponent {
       marca: '',
       codigoInterno: '',
       codigoBarras: '',
+      createdAtFrom: '',
+      createdAtTo: '',
+      updatedAtFrom: '',
+      updatedAtTo: '',
     });
     this.currentPage.set(1);
   }
@@ -322,6 +476,12 @@ export class ProductListComponent {
   hasActiveFilters(): boolean {
     const filters = this.columnFilters();
     return Object.values(filters).some((v) => v.trim() !== '');
+  }
+
+  goToPage(page: number | string) {
+    if (typeof page === 'number' && page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
   }
 
   toggleSort(column: string) {
@@ -375,9 +535,25 @@ export class ProductListComponent {
         return product.supplierInvoices?.[0]?.numeroFactura ?? '';
       case 'proveedor':
         return product.supplierInvoices?.[0]?.suppliers?.razon_social ?? '';
+      case 'createdAt':
+        return product.createdAt;
+      case 'updatedAt':
+        return product.updatedAt;
       default:
         return '';
     }
+  }
+
+  formatDate(dateString: string): string {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }
 
   toggleColumn(key: string) {

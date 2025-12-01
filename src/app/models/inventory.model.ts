@@ -144,6 +144,8 @@ export interface Product {
   imagenes: ProductImage[];
   supplierInvoices?: SupplierInvoice[];
   imageFiles?: File[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const DEFAULT_CATEGORIES: Category[] = [

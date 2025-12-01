@@ -340,6 +340,8 @@ export class InventoryService {
       codigoBarras: entity.codigo_barras || '',
       imagenes: images,
       supplierInvoices,
+      createdAt: entity.created_at || '',
+      updatedAt: entity.updated_at || '',
     };
   }
 }
