@@ -391,10 +391,26 @@
             </th>
           }
           @if (columnVisibility()['factura']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Factura</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('factura')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Factura
+                <ng-icon hlm [name]="getSortIcon('factura')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['proveedor']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Proveedor</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('proveedor')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Proveedor
+                <ng-icon hlm [name]="getSortIcon('proveedor')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['acciones']) {
             <th class="px-3 sm:px-6 py-2 sm:py-3">Acciones</th>

@@ -371,6 +371,10 @@ export class ProductListComponent {
         return product.codigoInterno;
       case 'codigoBarras':
         return product.codigoBarras;
+      case 'factura':
+        return product.supplierInvoices?.[0]?.numeroFactura ?? '';
+      case 'proveedor':
+        return product.supplierInvoices?.[0]?.suppliers?.razon_social ?? '';
       default:
         return '';
     }
