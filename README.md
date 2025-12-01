@@ -72,6 +72,7 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - **Table visualization** with configurable columns
 - **Real-time search** by name, internal code, barcode, or brand
 - **Configurable pagination** (10, 20, or 50 products per page) with numbered page buttons
+- **Multi-Select Bulk Deletion**: Select multiple products with checkboxes for bulk deletion with confirmation
 - **Column Sorting**: Click any column header to sort ascending/descending with visual indicators
 - **Advanced Filtering**: Expandable filter panel with:
   - Text filters for name, category, brand, internal code, barcode
@@ -360,6 +361,13 @@ Each product row has **9 action buttons**:
 
 - Remove product from inventory
 - Immediate database update
+
+10. **☑️ Multi-Select** (checkbox column):
+
+- Select individual products with row checkbox
+- Select all products on page with header checkbox
+- "Eliminar (X)" button appears when products selected
+- Bulk delete with confirmation dialog
 
 ### 6. View Product Images
 

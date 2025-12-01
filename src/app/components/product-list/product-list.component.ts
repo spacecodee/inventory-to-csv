@@ -32,6 +32,8 @@ import {
   lucideScanBarcode,
   lucideSearch,
   lucideSettings2,
+  lucideSquare,
+  lucideSquareCheck,
   lucideTag,
   lucideTrash2,
   lucideUpload,
@@ -99,6 +101,8 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
       lucideFilter,
       lucideCalendar,
       lucideUpload,
+      lucideSquare,
+      lucideSquareCheck,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -124,6 +128,8 @@ export class ProductListComponent implements OnInit {
 
   sortColumn = signal<string | null>(null);
   sortDirection = signal<'asc' | 'desc'>('asc');
+
+  selectedProductIds = signal<Set<string>>(new Set());
 
   showFilters = signal(false);
   columnFilters = signal<Record<string, string>>({
@@ -391,6 +397,22 @@ export class ProductListComponent implements OnInit {
     return Math.ceil(this.filteredProducts().length / this.itemsPerPage());
   });
 
+  allPageSelected = computed(() => {
+    const paginated = this.paginatedProducts();
+    const selected = this.selectedProductIds();
+    if (paginated.length === 0) return false;
+    return paginated.every((p) => selected.has(p.id));
+  });
+
+  somePageSelected = computed(() => {
+    const paginated = this.paginatedProducts();
+    const selected = this.selectedProductIds();
+    const selectedCount = paginated.filter((p) => selected.has(p.id)).length;
+    return selectedCount > 0 && selectedCount < paginated.length;
+  });
+
+  selectedCount = computed(() => this.selectedProductIds().size);
+
   pageNumbers = computed(() => {
     const total = this.totalPages();
     const current = this.currentPage();
@@ -551,6 +573,70 @@ export class ProductListComponent implements OnInit {
       hour: '2-digit',
       minute: '2-digit',
     });
+  }
+
+  toggleProductSelection(productId: string) {
+    this.selectedProductIds.update((set) => {
+      const newSet = new Set(set);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  }
+
+  togglePageSelection() {
+    const paginated = this.paginatedProducts();
+    const allSelected = this.allPageSelected();
+
+    this.selectedProductIds.update((set) => {
+      const newSet = new Set(set);
+      if (allSelected) {
+        for (const p of paginated) {
+          newSet.delete(p.id);
+        }
+      } else {
+        for (const p of paginated) {
+          newSet.add(p.id);
+        }
+      }
+      return newSet;
+    });
+  }
+
+  clearSelection() {
+    this.selectedProductIds.set(new Set());
+  }
+
+  isProductSelected(productId: string): boolean {
+    return this.selectedProductIds().has(productId);
+  }
+
+  async deleteSelectedProducts() {
+    const count = this.selectedCount();
+    if (count === 0) return;
+
+    const confirmed = globalThis.confirm(
+      `¿Estás seguro de eliminar ${ count } producto${ count > 1 ? 's' : '' }?`
+    );
+    if (!confirmed) return;
+
+    const ids = Array.from(this.selectedProductIds());
+
+    try {
+      for (const id of ids) {
+        await this.inventoryService.removeProduct(id);
+      }
+      this.notificationService.success(
+        'Productos eliminados',
+        `Se eliminaron ${ count } producto${ count > 1 ? 's' : '' }`
+      );
+      this.clearSelection();
+    } catch (error) {
+      this.notificationService.error('Error al eliminar', String(error));
+    }
   }
 
   toggleColumn(key: string) {

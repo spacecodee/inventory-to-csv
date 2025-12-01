@@ -25,6 +25,16 @@
           <span class="hidden sm:inline">Limpiar</span>
         </button>
 
+        @if (selectedCount() > 0) {
+          <button
+            (click)="deleteSelectedProducts()"
+            class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors flex items-center justify-center gap-2 shadow-sm"
+          >
+            <ng-icon hlm name="lucideTrash2" size="sm"></ng-icon>
+            <span>Eliminar ({{ selectedCount() }})</span>
+          </button>
+        }
+
         <button
           (click)="downloadBarcodes()"
           class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2 shadow-sm"
@@ -294,6 +304,21 @@
           class="text-[10px] sm:text-xs text-muted-foreground uppercase bg-secondary/50 border-b border-border"
         >
         <tr>
+          <th class="px-2 sm:px-3 py-2 sm:py-3 w-10">
+            <button
+              (click)="togglePageSelection()"
+              class="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Seleccionar todos de esta página"
+            >
+              @if (allPageSelected()) {
+                <ng-icon hlm name="lucideSquareCheck" size="sm" class="text-primary"></ng-icon>
+              } @else if (somePageSelected()) {
+                <ng-icon hlm name="lucideSquareCheck" size="sm" class="text-primary/50"></ng-icon>
+              } @else {
+                <ng-icon hlm name="lucideSquare" size="sm"></ng-icon>
+              }
+            </button>
+          </th>
           @if (columnVisibility()['imagen']) {
             <th class="sticky left-0 z-10 bg-secondary/50 px-3 sm:px-6 py-2 sm:py-3">Imagen</th>
           }
@@ -470,6 +495,18 @@
         <tbody>
           @for (product of paginatedProducts(); track product.id) {
             <tr class="bg-card border-b border-border hover:bg-secondary/20 transition-colors">
+              <td class="px-2 sm:px-3 py-3 sm:py-4 w-10">
+                <button
+                  (click)="toggleProductSelection(product.id)"
+                  class="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  @if (isProductSelected(product.id)) {
+                    <ng-icon hlm name="lucideSquareCheck" size="sm" class="text-primary"></ng-icon>
+                  } @else {
+                    <ng-icon hlm name="lucideSquare" size="sm"></ng-icon>
+                  }
+                </button>
+              </td>
               @if (columnVisibility()['imagen']) {
                 <td class="sticky left-0 z-10 bg-card px-3 sm:px-6 py-3 sm:py-4">
                   <button
