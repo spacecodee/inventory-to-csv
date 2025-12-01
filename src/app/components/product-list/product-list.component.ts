@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideIcons } from '@ng-icons/core';
@@ -27,13 +34,15 @@ import {
   lucideSettings2,
   lucideTag,
   lucideTrash2,
+  lucideUpload,
   lucideX,
 } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { Product } from '../../models/inventory.model';
 import { BarcodeService } from '../../services/barcode.service';
-import { ExcelService } from '../../services/excel.service';
+import { ExcelImportResult, ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
+import { NotificationService } from '../../services/notification.service';
 import { PrintService } from '../../services/print.service';
 import { SystemConfigService } from '../../services/system-config.service';
 import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-suffix-dialog';
@@ -89,6 +98,7 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
       lucideArrowUpDown,
       lucideFilter,
       lucideCalendar,
+      lucideUpload,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -99,6 +109,7 @@ export class ProductListComponent implements OnInit {
   private readonly excelService = inject(ExcelService);
   private readonly systemConfig = inject(SystemConfigService);
   private readonly barcodeService = inject(BarcodeService);
+  private readonly notificationService = inject(NotificationService);
   private readonly printService = inject(PrintService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -201,10 +212,12 @@ export class ProductListComponent implements OnInit {
       params[`filter_${ key }`] = value || null;
     }
 
-    this.router.navigate([], {
+    this.router
+    .navigate([], {
       queryParams: params,
       queryParamsHandling: 'merge',
-    }).then(() => undefined);
+    })
+    .then(() => undefined);
   }
 
   // Price Calculator State
@@ -826,5 +839,106 @@ export class ProductListComponent implements OnInit {
   async downloadPriceLabels() {
     const products = this.paginatedProducts();
     await this.barcodeService.downloadPriceLabelsAsZip(products, this.currentPage());
+  }
+
+  showImportDialog = signal(false);
+  importLoading = signal(false);
+  importResult = signal<ExcelImportResult | null>(null);
+
+  openImportDialog() {
+    this.showImportDialog.set(true);
+    this.importResult.set(null);
+  }
+
+  closeImportDialog() {
+    this.showImportDialog.set(false);
+    this.importResult.set(null);
+  }
+
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      this.notificationService.error(
+        'Archivo inválido',
+        'Solo se permiten archivos Excel (.xlsx, .xls)'
+      );
+      return;
+    }
+
+    await this.importExcel(file);
+    input.value = '';
+  }
+
+  async importExcel(file: File) {
+    this.importLoading.set(true);
+    this.importResult.set(null);
+
+    try {
+      const rows = await this.excelService.parseExcelFile(file);
+      const currentProducts = this.products();
+
+      const result: ExcelImportResult = {
+        updated: 0,
+        notFound: 0,
+        errors: [],
+        details: [],
+      };
+
+      for (const row of rows) {
+        const identifier = row.codigoBarras || row.codigoInterno || row.nombre || 'Desconocido';
+
+        try {
+          const existingProduct = this.excelService.findMatchingProduct(row, currentProducts);
+
+          if (existingProduct) {
+            const updatedProduct = this.excelService.mergeProductData(existingProduct, row);
+            await this.inventoryService.updateProduct(updatedProduct);
+            result.updated++;
+            result.details.push({
+              identifier,
+              status: 'updated',
+              message: `Actualizado: ${ existingProduct.nombre }`,
+            });
+          } else {
+            result.notFound++;
+            result.details.push({
+              identifier,
+              status: 'not_found',
+              message: 'No se encontró producto con ese código',
+            });
+          }
+        } catch (error) {
+          result.errors.push(`Error en ${ identifier }: ${ error }`);
+          result.details.push({
+            identifier,
+            status: 'error',
+            message: String(error),
+          });
+        }
+      }
+
+      this.importResult.set(result);
+
+      if (result.updated > 0) {
+        this.notificationService.success(
+          'Importación completada',
+          `${ result.updated } productos actualizados`
+        );
+      }
+
+      if (result.notFound > 0) {
+        this.notificationService.warning(
+          'Productos no encontrados',
+          `${ result.notFound } productos no pudieron ser identificados`
+        );
+      }
+    } catch (error) {
+      this.notificationService.error('Error al importar', String(error));
+    } finally {
+      this.importLoading.set(false);
+    }
   }
 }
