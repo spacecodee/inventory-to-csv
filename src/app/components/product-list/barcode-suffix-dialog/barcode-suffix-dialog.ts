@@ -47,12 +47,12 @@ export class BarcodeSuffixDialogComponent implements OnInit {
   currentSuffix = computed(() => {
     const barcode = this.product().codigoBarras;
     if (barcode.length <= 2) return 'G';
-    return barcode[barcode.length - 2];
+    return barcode.at(-2) ?? 'G';
   });
 
   newBarcode = computed(() => {
     const checkDigit = Math.floor(Math.random() * 10);
-    return `${ this.barcodeBase() }${ this.selectedSuffix() }${ checkDigit }`;
+    return `${this.barcodeBase()}${this.selectedSuffix()}${checkDigit}`;
   });
 
   ngOnInit() {

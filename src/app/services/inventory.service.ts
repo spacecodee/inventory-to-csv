@@ -172,11 +172,11 @@ export class InventoryService {
   async updateAllBarcodesToCompactFormat(): Promise<void> {
     const products = this.productsSignal();
     const suffixMap: { [key: string]: string } = {
-      'H': 'H',
-      'M': 'M',
-      'MIX': 'X',
-      'NA': 'N',
-      'GEN': 'G',
+      H: 'H',
+      M: 'M',
+      MIX: 'X',
+      NA: 'N',
+      GEN: 'G',
     };
 
     for (const product of products) {
@@ -201,7 +201,6 @@ export class InventoryService {
 
       if (error) {
         console.error('Error updating barcode for product:', product.id, error);
-        continue;
       }
     }
 
