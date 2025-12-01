@@ -71,7 +71,15 @@ A modern inventory processing and management system that uses **Google Gemini AI
 
 - **Table visualization** with configurable columns
 - **Real-time search** by name, internal code, barcode, or brand
-- **Configurable pagination** (10, 20, or 50 products per page)
+- **Configurable pagination** (10, 20, or 50 products per page) with numbered page buttons
+- **Column Sorting**: Click any column header to sort ascending/descending with visual indicators
+- **Advanced Filtering**: Expandable filter panel with:
+  - Text filters for name, category, brand, internal code, barcode
+  - Date range filters for creation and update dates
+  - Clear all filters button
+  - Active filter indicator badge
+- **URL State Sync**: All table state (page, search, sort, filters) syncs with URL query parameters for shareable views
+- **Creation & Update Dates**: Columns showing when products were created and last modified
 - **Supplier & Invoice Display**:
   - Quick view of invoice number and supplier information in product list
   - "Factura" column shows first assigned invoice number
@@ -122,8 +130,8 @@ A modern inventory processing and management system that uses **Google Gemini AI
 
 - **CODE128 format** barcode visualization
 - **Compact barcode format & bulk update**: Soporta el nuevo formato compacto `XXXSY` y dispone de una acción en la lista de productos para convertir en masa códigos antiguos al nuevo formato con feedback visual.
- - **Compact barcode format & bulk update**: Soporta el nuevo formato compacto `XXXSY` y dispone de una acción en la lista de productos para convertir en masa códigos antiguos al nuevo formato con feedback visual.
- - **Print to 80mm / PDF**: The product list includes an `Imprimir` button which opens a print-ready page formatted for 80mm thermal printers. The printed output contains only the barcode images (no product name) and is optimized for 80mm width.
+- **Compact barcode format & bulk update**: Soporta el nuevo formato compacto `XXXSY` y dispone de una acción en la lista de productos para convertir en masa códigos antiguos al nuevo formato con feedback visual.
+- **Print to 80mm / PDF**: The product list includes an `Imprimir` button which opens a print-ready page formatted for 80mm thermal printers. The printed output contains only the barcode images (no product name) and is optimized for 80mm width.
 
 Printing notes and usage
 
@@ -154,10 +162,19 @@ Notes on printer hardware
 
 ### 📤 Export Functionality
 
-- **Excel export** of all products
+- **Excel export** of all products or filtered results
+- Smart export logic: exports filtered products when filters are active, otherwise exports current page
 - Includes all relevant inventory columns: name, internal code, model, SUNAT code, prices, stock, etc.
 - **Images are not exported** (view-only column in table)
 - Format compatible with ERP systems
+
+### 📥 Excel Import for Updates
+
+- **Upload Excel to update products**: Import a previously exported Excel file to bulk-update existing products
+- **Product matching**: Products are identified by barcode (priority 1) or internal code (priority 2)
+- **Detailed results**: Shows count of updated, not found, and error products with individual status for each row
+- **Safe updates**: Only updates existing products, does not create new ones
+- **Preserves data**: Empty cells in Excel don't overwrite existing values
 
 ### 🎨 User Interface
 
@@ -289,7 +306,9 @@ Each product row has **9 action buttons**:
 1. **🧮 Price Calculator** (amber icon):
 
 - Calculate sale price based on purchase price + profit margin
-- Dialog to edit purchase price and desired profit
+- **New**: Enter total invoice price to auto-calculate unit price (total / stock)
+- All prices rounded up to 2 decimal places
+- Dialog to edit purchase price, profit, transport cost, and IGV
 - Automatically calculates and applies the sale price
 
 2. **📦 Stock Editor** (emerald icon):
