@@ -3,6 +3,9 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormsModule } from '@angular/forms';
 import { provideIcons } from '@ng-icons/core';
 import {
+  lucideArrowDown,
+  lucideArrowUp,
+  lucideArrowUpDown,
   lucideCalculator,
   lucideCheck,
   lucideDownload,
@@ -10,6 +13,7 @@ import {
   lucideEye,
   lucideFileCode,
   lucideFileText,
+  lucideFilter,
   lucideFolderOpen,
   lucideImage,
   lucideLoader,
@@ -79,6 +83,10 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
       lucideImage,
       lucideLoader,
       lucidePrinter,
+      lucideArrowUp,
+      lucideArrowDown,
+      lucideArrowUpDown,
+      lucideFilter,
     }),
   ],
   templateUrl: './product-list.component.html',
@@ -95,14 +103,23 @@ export class ProductListComponent {
   products = this.inventoryService.products;
   igvPercentage = this.systemConfig.igvPercentage;
 
-  // Search State
   searchQuery = signal('');
 
-  // Pagination State
   currentPage = signal(1);
   itemsPerPage = signal(10);
 
-  // Column Configuration
+  sortColumn = signal<string | null>(null);
+  sortDirection = signal<'asc' | 'desc'>('asc');
+
+  showFilters = signal(false);
+  columnFilters = signal<Record<string, string>>({
+    nombre: '',
+    categoria: '',
+    marca: '',
+    codigoInterno: '',
+    codigoBarras: '',
+  });
+
   isDropdownOpen = signal(false);
   availableColumns = signal([
     { key: 'imagen', label: 'Imagen', visible: true, alwaysVisible: true },
@@ -208,17 +225,59 @@ export class ProductListComponent {
 
   filteredProducts = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    const products = this.products();
+    const filters = this.columnFilters();
+    const sortCol = this.sortColumn();
+    const sortDir = this.sortDirection();
+    let products = this.products();
 
-    if (!query) return products;
+    if (query) {
+      products = products.filter(
+        (p) =>
+          p.nombre.toLowerCase().includes(query) ||
+          p.codigoInterno.toLowerCase().includes(query) ||
+          p.codigoBarras.toLowerCase().includes(query) ||
+          p.marca.toLowerCase().includes(query)
+      );
+    }
 
-    return products.filter(
-      (p) =>
-        p.nombre.toLowerCase().includes(query) ||
-        p.codigoInterno.toLowerCase().includes(query) ||
-        p.codigoBarras.toLowerCase().includes(query) ||
-        p.marca.toLowerCase().includes(query)
-    );
+    if (filters['nombre']) {
+      const filterValue = filters['nombre'].toLowerCase();
+      products = products.filter((p) => p.nombre.toLowerCase().includes(filterValue));
+    }
+    if (filters['categoria']) {
+      const filterValue = filters['categoria'].toLowerCase();
+      products = products.filter((p) => p.categoria.toLowerCase().includes(filterValue));
+    }
+    if (filters['marca']) {
+      const filterValue = filters['marca'].toLowerCase();
+      products = products.filter((p) => p.marca.toLowerCase().includes(filterValue));
+    }
+    if (filters['codigoInterno']) {
+      const filterValue = filters['codigoInterno'].toLowerCase();
+      products = products.filter((p) => p.codigoInterno.toLowerCase().includes(filterValue));
+    }
+    if (filters['codigoBarras']) {
+      const filterValue = filters['codigoBarras'].toLowerCase();
+      products = products.filter((p) => p.codigoBarras.toLowerCase().includes(filterValue));
+    }
+
+    if (sortCol) {
+      products = [...products].sort((a, b) => {
+        const valA = this.getSortValue(a, sortCol);
+        const valB = this.getSortValue(b, sortCol);
+
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return sortDir === 'asc' ? valA - valB : valB - valA;
+        }
+
+        const strA = String(valA).toLowerCase();
+        const strB = String(valB).toLowerCase();
+        const comparison = strA.localeCompare(strB);
+        return sortDir === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    return products;
   });
 
   paginatedProducts = computed(() => {
@@ -238,6 +297,83 @@ export class ProductListComponent {
   // Actions
   toggleDropdown() {
     this.isDropdownOpen.update((v) => !v);
+  }
+
+  toggleFilters() {
+    this.showFilters.update((v) => !v);
+  }
+
+  updateColumnFilter(column: string, value: string) {
+    this.columnFilters.update((filters) => ({ ...filters, [column]: value }));
+    this.currentPage.set(1);
+  }
+
+  clearFilters() {
+    this.columnFilters.set({
+      nombre: '',
+      categoria: '',
+      marca: '',
+      codigoInterno: '',
+      codigoBarras: '',
+    });
+    this.currentPage.set(1);
+  }
+
+  hasActiveFilters(): boolean {
+    const filters = this.columnFilters();
+    return Object.values(filters).some((v) => v.trim() !== '');
+  }
+
+  toggleSort(column: string) {
+    const currentCol = this.sortColumn();
+    const currentDir = this.sortDirection();
+
+    if (currentCol === column) {
+      if (currentDir === 'asc') {
+        this.sortDirection.set('desc');
+      } else {
+        this.sortColumn.set(null);
+        this.sortDirection.set('asc');
+      }
+    } else {
+      this.sortColumn.set(column);
+      this.sortDirection.set('asc');
+    }
+  }
+
+  getSortIcon(column: string): string {
+    const currentCol = this.sortColumn();
+    if (currentCol !== column) return 'lucideArrowUpDown';
+    return this.sortDirection() === 'asc' ? 'lucideArrowUp' : 'lucideArrowDown';
+  }
+
+  private getSortValue(product: Product, column: string): string | number {
+    switch (column) {
+      case 'nombre':
+        return product.nombre;
+      case 'categoria':
+        return product.categoria;
+      case 'marca':
+        return product.marca;
+      case 'descripcion':
+        return product.descripcion;
+      case 'stock':
+        return product.stock;
+      case 'precioCompra':
+        return product.precioUnitarioCompra;
+      case 'precioVenta':
+        return product.precioUnitarioVenta;
+      case 'totalCompra':
+        return product.stock * product.precioUnitarioCompra;
+      case 'totalVenta':
+        return product.stock * product.precioUnitarioVenta;
+      case 'codigoInterno':
+        return product.codigoInterno;
+      case 'codigoBarras':
+        return product.codigoBarras;
+      default:
+        return '';
+    }
   }
 
   toggleColumn(key: string) {

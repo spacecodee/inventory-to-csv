@@ -119,41 +119,138 @@
         />
       </div>
 
-      <!-- Column Toggle -->
-      <div class="relative w-full sm:w-auto">
+      <div class="flex gap-2 w-full sm:w-auto">
+        <!-- Filter Toggle -->
         <button
-          (click)="toggleDropdown()"
-          class="w-full sm:w-auto px-4 py-2 rounded-lg bg-secondary/20 border border-border hover:bg-secondary/40 transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm font-medium"
+          (click)="toggleFilters()"
+          [class]="
+            showFilters() || hasActiveFilters()
+              ? 'flex-1 sm:flex-none px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm font-medium bg-primary text-primary-foreground border-primary'
+              : 'flex-1 sm:flex-none px-4 py-2 rounded-lg border transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm font-medium bg-secondary/20 border-border hover:bg-secondary/40'
+          "
         >
-          <ng-icon hlm name="lucideSettings2" size="sm"></ng-icon>
-          Columnas
+          <ng-icon hlm name="lucideFilter" size="sm"></ng-icon>
+          Filtros @if (hasActiveFilters()) {
+          <span class="ml-1 px-1.5 py-0.5 text-[10px] bg-white/20 rounded-full">activos</span>
+        }
         </button>
 
-        <!-- Dropdown -->
-        @if (isDropdownOpen()) {
-          <div
-            class="absolute right-0 top-full mt-2 w-full sm:w-56 bg-card rounded-lg shadow-lg border border-border p-2 z-10"
+        <!-- Column Toggle -->
+        <div class="relative flex-1 sm:flex-none">
+          <button
+            (click)="toggleDropdown()"
+            class="w-full sm:w-auto px-4 py-2 rounded-lg bg-secondary/20 border border-border hover:bg-secondary/40 transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm font-medium"
           >
-            <div class="text-[10px] sm:text-xs font-semibold text-muted-foreground px-2 py-1 mb-1">
-              Mostrar Columnas
+            <ng-icon hlm name="lucideSettings2" size="sm"></ng-icon>
+            Columnas
+          </button>
+
+          <!-- Dropdown -->
+          @if (isDropdownOpen()) {
+            <div
+              class="absolute right-0 top-full mt-2 w-full sm:w-56 bg-card rounded-lg shadow-lg border border-border p-2 z-10"
+            >
+              <div class="text-[10px] sm:text-xs font-semibold text-muted-foreground px-2 py-1 mb-1">
+                Mostrar Columnas
+              </div>
+              @for (col of availableColumns(); track col.key) {
+                <button
+                  (click)="toggleColumn(col.key)"
+                  class="w-full flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-secondary/20 text-xs sm:text-sm transition-colors"
+                  [class.opacity-50]="col.alwaysVisible"
+                  [disabled]="col.alwaysVisible"
+                >
+                  <span>{{ col.label }}</span>
+                  @if (col.visible) {
+                    <ng-icon hlm name="lucideCheck" size="sm" class="text-primary"></ng-icon>
+                  }
+                </button>
+              }
             </div>
-            @for (col of availableColumns(); track col.key) {
-              <button
-                (click)="toggleColumn(col.key)"
-                class="w-full flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-secondary/20 text-xs sm:text-sm transition-colors"
-                [class.opacity-50]="col.alwaysVisible"
-                [disabled]="col.alwaysVisible"
-              >
-                <span>{{ col.label }}</span>
-                @if (col.visible) {
-                  <ng-icon hlm name="lucideCheck" size="sm" class="text-primary"></ng-icon>
-                }
-              </button>
-            }
-          </div>
-        }
+          }
+        </div>
       </div>
     </div>
+
+    <!-- Column Filters Panel -->
+    @if (showFilters()) {
+      <div class="bg-card p-4 rounded-xl border border-border shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-sm font-semibold text-foreground">Filtros por columna</h4>
+          @if (hasActiveFilters()) {
+            <button
+              (click)="clearFilters()"
+              class="text-xs text-destructive hover:text-destructive/80 transition-colors"
+            >
+              Limpiar filtros
+            </button>
+          }
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div>
+            <label for="filter-nombre" class="block text-xs text-muted-foreground mb-1">Nombre</label>
+            <input
+              id="filter-nombre"
+              type="text"
+              [ngModel]="columnFilters()['nombre']"
+              (ngModelChange)="updateColumnFilter('nombre', $event)"
+              placeholder="Filtrar nombre..."
+              class="w-full px-3 py-1.5 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          <div>
+            <label for="filter-categoria" class="block text-xs text-muted-foreground mb-1"
+            >Categoría</label
+            >
+            <input
+              id="filter-categoria"
+              type="text"
+              [ngModel]="columnFilters()['categoria']"
+              (ngModelChange)="updateColumnFilter('categoria', $event)"
+              placeholder="Filtrar categoría..."
+              class="w-full px-3 py-1.5 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          <div>
+            <label for="filter-marca" class="block text-xs text-muted-foreground mb-1">Marca</label>
+            <input
+              id="filter-marca"
+              type="text"
+              [ngModel]="columnFilters()['marca']"
+              (ngModelChange)="updateColumnFilter('marca', $event)"
+              placeholder="Filtrar marca..."
+              class="w-full px-3 py-1.5 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          <div>
+            <label for="filter-codigoInterno" class="block text-xs text-muted-foreground mb-1"
+            >Código Interno</label
+            >
+            <input
+              id="filter-codigoInterno"
+              type="text"
+              [ngModel]="columnFilters()['codigoInterno']"
+              (ngModelChange)="updateColumnFilter('codigoInterno', $event)"
+              placeholder="Filtrar código..."
+              class="w-full px-3 py-1.5 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          <div>
+            <label for="filter-codigoBarras" class="block text-xs text-muted-foreground mb-1"
+            >Código Barras</label
+            >
+            <input
+              id="filter-codigoBarras"
+              type="text"
+              [ngModel]="columnFilters()['codigoBarras']"
+              (ngModelChange)="updateColumnFilter('codigoBarras', $event)"
+              placeholder="Filtrar código..."
+              class="w-full px-3 py-1.5 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+        </div>
+      </div>
+    }
   </div>
 
   @if (products().length === 0) {
@@ -173,37 +270,125 @@
             <th class="sticky left-0 z-10 bg-secondary/50 px-3 sm:px-6 py-2 sm:py-3">Imagen</th>
           }
           @if (columnVisibility()['nombre']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Nombre</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('nombre')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Nombre
+                <ng-icon hlm [name]="getSortIcon('nombre')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['categoria']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Categoría</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('categoria')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Categoría
+                <ng-icon hlm [name]="getSortIcon('categoria')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['marca']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Marca</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('marca')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Marca
+                <ng-icon hlm [name]="getSortIcon('marca')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['descripcion']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Descripción</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('descripcion')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Descripción
+                <ng-icon hlm [name]="getSortIcon('descripcion')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['stock']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Stock</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('stock')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Stock
+                <ng-icon hlm [name]="getSortIcon('stock')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['precioCompra']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">P. Compra</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('precioCompra')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                P. Compra
+                <ng-icon hlm [name]="getSortIcon('precioCompra')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['precioVenta']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">P. Venta</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('precioVenta')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                P. Venta
+                <ng-icon hlm [name]="getSortIcon('precioVenta')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['totalCompra']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Total Compra</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('totalCompra')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Total Compra
+                <ng-icon hlm [name]="getSortIcon('totalCompra')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['totalVenta']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Total Venta</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('totalVenta')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Total Venta
+                <ng-icon hlm [name]="getSortIcon('totalVenta')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['codigoInterno']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Código</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('codigoInterno')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Código
+                <ng-icon hlm [name]="getSortIcon('codigoInterno')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['codigoBarras']) {
-            <th class="px-3 sm:px-6 py-2 sm:py-3">Código Barras</th>
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('codigoBarras')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Código Barras
+                <ng-icon hlm [name]="getSortIcon('codigoBarras')" size="xs"></ng-icon>
+              </button>
+            </th>
           }
           @if (columnVisibility()['factura']) {
             <th class="px-3 sm:px-6 py-2 sm:py-3">Factura</th>
