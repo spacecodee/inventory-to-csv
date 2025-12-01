@@ -112,7 +112,7 @@
         </div>
         <input
           [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
+          (ngModelChange)="updateSearch($event)"
           type="text"
           placeholder="Buscar..."
           class="w-full pl-10 pr-4 py-2 text-sm sm:text-base rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"

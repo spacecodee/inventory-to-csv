@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   OnInit,
   signal,
@@ -158,48 +157,8 @@ export class ProductListComponent implements OnInit {
     { key: 'acciones', label: 'Acciones', visible: true, alwaysVisible: true },
   ]);
 
-  private isUpdatingFromUrl = false;
-
-  constructor() {
-    effect(() => {
-      if (this.isUpdatingFromUrl) return;
-
-      const params: Record<string, string> = {};
-
-      const page = this.currentPage();
-      if (page > 1) params['page'] = String(page);
-
-      const perPage = this.itemsPerPage();
-      if (perPage !== 10) params['perPage'] = String(perPage);
-
-      const search = this.searchQuery();
-      if (search) params['search'] = search;
-
-      const sortCol = this.sortColumn();
-      const sortDir = this.sortDirection();
-      if (sortCol) {
-        params['sort'] = sortCol;
-        params['order'] = sortDir;
-      }
-
-      const filters = this.columnFilters();
-      for (const [key, value] of Object.entries(filters)) {
-        if (value) params[`filter_${ key }`] = value;
-      }
-
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: params,
-        queryParamsHandling: 'replace',
-        replaceUrl: true,
-      });
-    });
-  }
-
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
-      this.isUpdatingFromUrl = true;
-
       if (params['page']) this.currentPage.set(Number(params['page']));
       if (params['perPage']) this.itemsPerPage.set(Number(params['perPage']));
       if (params['search']) this.searchQuery.set(params['search']);
@@ -226,10 +185,34 @@ export class ProductListComponent implements OnInit {
       }
 
       this.columnFilters.set(filters);
+    });
+  }
 
-      setTimeout(() => {
-        this.isUpdatingFromUrl = false;
-      }, 0);
+  private updateUrl() {
+    const params: Record<string, string | null> = {};
+
+    const page = this.currentPage();
+    params['page'] = page > 1 ? String(page) : null;
+
+    const perPage = this.itemsPerPage();
+    params['perPage'] = perPage === 10 ? null : String(perPage);
+
+    const search = this.searchQuery();
+    params['search'] = search || null;
+
+    const sortCol = this.sortColumn();
+    const sortDir = this.sortDirection();
+    params['sort'] = sortCol || null;
+    params['order'] = sortCol ? sortDir : null;
+
+    const filters = this.columnFilters();
+    for (const [key, value] of Object.entries(filters)) {
+      params[`filter_${ key }`] = value || null;
+    }
+
+    this.router.navigate([], {
+      queryParams: params,
+      queryParamsHandling: 'merge',
     });
   }
 
@@ -453,9 +436,16 @@ export class ProductListComponent implements OnInit {
     this.showFilters.update((v) => !v);
   }
 
+  updateSearch(value: string) {
+    this.searchQuery.set(value);
+    this.currentPage.set(1);
+    this.updateUrl();
+  }
+
   updateColumnFilter(column: string, value: string) {
     this.columnFilters.update((filters) => ({ ...filters, [column]: value }));
     this.currentPage.set(1);
+    this.updateUrl();
   }
 
   clearFilters() {
@@ -471,6 +461,7 @@ export class ProductListComponent implements OnInit {
       updatedAtTo: '',
     });
     this.currentPage.set(1);
+    this.updateUrl();
   }
 
   hasActiveFilters(): boolean {
@@ -481,6 +472,7 @@ export class ProductListComponent implements OnInit {
   goToPage(page: number | string) {
     if (typeof page === 'number' && page >= 1 && page <= this.totalPages()) {
       this.currentPage.set(page);
+      this.updateUrl();
     }
   }
 
@@ -499,6 +491,7 @@ export class ProductListComponent implements OnInit {
       this.sortColumn.set(column);
       this.sortDirection.set('asc');
     }
+    this.updateUrl();
   }
 
   getSortIcon(column: string): string {
@@ -569,18 +562,21 @@ export class ProductListComponent implements OnInit {
 
   updateItemsPerPage(count: number) {
     this.itemsPerPage.set(Number(count));
-    this.currentPage.set(1); // Reset to first page
+    this.currentPage.set(1);
+    this.updateUrl();
   }
 
   nextPage() {
     if (this.currentPage() * this.itemsPerPage() < this.filteredProducts().length) {
       this.currentPage.update((p) => p + 1);
+      this.updateUrl();
     }
   }
 
   prevPage() {
     if (this.currentPage() > 1) {
       this.currentPage.update((p) => p - 1);
+      this.updateUrl();
     }
   }
 
