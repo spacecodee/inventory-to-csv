@@ -1,12 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideIcons } from '@ng-icons/core';
@@ -41,7 +34,6 @@ import { Product } from '../../models/inventory.model';
 import { BarcodeService } from '../../services/barcode.service';
 import { ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
-import { NotificationService } from '../../services/notification.service';
 import { PrintService } from '../../services/print.service';
 import { SystemConfigService } from '../../services/system-config.service';
 import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-suffix-dialog';
@@ -107,7 +99,6 @@ export class ProductListComponent implements OnInit {
   private readonly excelService = inject(ExcelService);
   private readonly systemConfig = inject(SystemConfigService);
   private readonly barcodeService = inject(BarcodeService);
-  private readonly notificationService = inject(NotificationService);
   private readonly printService = inject(PrintService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -213,7 +204,7 @@ export class ProductListComponent implements OnInit {
     this.router.navigate([], {
       queryParams: params,
       queryParamsHandling: 'merge',
-    });
+    }).then(() => undefined);
   }
 
   // Price Calculator State
@@ -588,24 +579,12 @@ export class ProductListComponent implements OnInit {
     this.inventoryService.clearProducts().then(() => undefined);
   }
 
-  // Barcode Update State
-  barcodeUpdating = signal(false);
-  barcodeUpdateProgress = signal(0);
-
   downloadExcel() {
     const productsToExport =
       this.hasActiveFilters() || this.searchQuery()
         ? this.filteredProducts()
         : this.paginatedProducts();
     this.excelService.exportToExcel(productsToExport);
-  }
-
-  async printBarcodesToPdf() {
-    await this.printService.printBarcodesToPdf(this.paginatedProducts());
-  }
-
-  async printLabels() {
-    await this.printService.printLabels(this.paginatedProducts());
   }
 
   openPrintQuantityDialog(product: Product, type: 'barcode' | 'label') {
@@ -622,33 +601,6 @@ export class ProductListComponent implements OnInit {
 
   async printProductLabel(product: Product, copies: number) {
     await this.printService.printProductLabel(product, copies);
-  }
-
-  async updateAllBarcodesToCompact() {
-    const confirmed = globalThis.confirm(
-      'Esta acción convertirá todos los códigos de barras al formato compacto. ¿Estás seguro?'
-    );
-    if (!confirmed) return;
-
-    this.barcodeUpdating.set(true);
-    this.barcodeUpdateProgress.set(0);
-
-    try {
-      await this.inventoryService.updateAllBarcodesToCompactFormat();
-      this.notificationService.success(
-        'Códigos de barras actualizados',
-        'Todos los códigos han sido convertidos al formato compacto'
-      );
-    } catch (error) {
-      console.error('Error updating barcodes:', error);
-      this.notificationService.error(
-        'Error al actualizar códigos',
-        'Ocurrió un error durante la actualización'
-      );
-    } finally {
-      this.barcodeUpdating.set(false);
-      this.barcodeUpdateProgress.set(0);
-    }
   }
 
   viewProduct(product: Product) {

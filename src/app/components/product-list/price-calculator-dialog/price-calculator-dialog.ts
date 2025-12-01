@@ -34,6 +34,7 @@ export class PriceCalculatorDialogComponent implements OnInit {
     tieneIgv: boolean;
   }>();
 
+  totalPurchasePrice = signal<number>(0);
   editablePurchasePrice = signal<number>(0);
   profitAmount = signal<number>(0);
   transportCost = signal<number>(0);
@@ -41,17 +42,34 @@ export class PriceCalculatorDialogComponent implements OnInit {
 
   igvPercentage = this.systemConfig.igvPercentage;
 
+  productStock = computed(() => this.product().stock || 1);
+
+  private roundUp(value: number): number {
+    return Math.ceil(value * 100) / 100;
+  }
+
+  calculatedUnitPrice = computed(() => {
+    const total = this.totalPurchasePrice();
+    const stock = this.productStock();
+    if (total > 0 && stock > 0) {
+      return this.roundUp(total / stock);
+    }
+    return this.editablePurchasePrice();
+  });
+
   subtotal = computed(() => {
-    return this.editablePurchasePrice() + this.profitAmount() + this.transportCost();
+    const unitPrice =
+      this.totalPurchasePrice() > 0 ? this.calculatedUnitPrice() : this.editablePurchasePrice();
+    return this.roundUp(unitPrice + this.profitAmount() + this.transportCost());
   });
 
   igvAmount = computed(() => {
     if (!this.applyIgv()) return 0;
-    return this.subtotal() * (this.igvPercentage() / 100);
+    return this.roundUp(this.subtotal() * (this.igvPercentage() / 100));
   });
 
   calculatedPrice = computed(() => {
-    return this.subtotal() + this.igvAmount();
+    return this.roundUp(this.subtotal() + this.igvAmount());
   });
 
   ngOnInit() {
@@ -60,8 +78,18 @@ export class PriceCalculatorDialogComponent implements OnInit {
     this.applyIgv.set(this.product().tieneIgv);
   }
 
+  updateTotalPurchasePrice(value: number) {
+    const total = Number(value) || 0;
+    this.totalPurchasePrice.set(total);
+    if (total > 0) {
+      const stock = this.productStock();
+      this.editablePurchasePrice.set(this.roundUp(total / stock));
+    }
+  }
+
   updatePurchasePrice(value: number) {
     this.editablePurchasePrice.set(Number(value) || 0);
+    this.totalPurchasePrice.set(0);
   }
 
   updateProfitAmount(value: number) {
@@ -77,8 +105,10 @@ export class PriceCalculatorDialogComponent implements OnInit {
   }
 
   onApply() {
+    const unitPrice =
+      this.totalPurchasePrice() > 0 ? this.calculatedUnitPrice() : this.editablePurchasePrice();
     this.apply.emit({
-      precioUnitarioCompra: this.editablePurchasePrice(),
+      precioUnitarioCompra: unitPrice,
       precioUnitarioVenta: this.calculatedPrice(),
       tieneIgv: this.applyIgv(),
     });
