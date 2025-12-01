@@ -593,7 +593,11 @@ export class ProductListComponent implements OnInit {
   barcodeUpdateProgress = signal(0);
 
   downloadExcel() {
-    this.excelService.exportToExcel(this.products());
+    const productsToExport =
+      this.hasActiveFilters() || this.searchQuery()
+        ? this.filteredProducts()
+        : this.paginatedProducts();
+    this.excelService.exportToExcel(productsToExport);
   }
 
   async printBarcodesToPdf() {

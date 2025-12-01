@@ -56,47 +56,12 @@
         </button>
 
         <button
-          (click)="printBarcodesToPdf()"
-          class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-slate-700 text-white hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-sm"
-          [disabled]="paginatedProducts().length === 0"
-          title="Imprimir códigos de barras (40x60mm)"
-        >
-          <ng-icon hlm name="lucidePrinter" size="sm"></ng-icon>
-          <span class="hidden sm:inline">Imprimir Códigos</span>
-        </button>
-
-        <button
-          (click)="printLabels()"
-          class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-orange-600 text-white hover:bg-orange-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
-          [disabled]="paginatedProducts().length === 0"
-          title="Imprimir etiquetas con nombre y precio (40x60mm)"
-        >
-          <ng-icon hlm name="lucidePrinter" size="sm"></ng-icon>
-          <span class="hidden sm:inline">Imprimir Etiquetas</span>
-        </button>
-
-        <button
           (click)="downloadExcel()"
           class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm"
-          [disabled]="products().length === 0"
+          [disabled]="paginatedProducts().length === 0"
         >
           <ng-icon hlm name="lucideDownload" size="sm"></ng-icon>
           <span class="hidden sm:inline">Descargar Excel</span>
-        </button>
-
-        <button
-          (click)="updateAllBarcodesToCompact()"
-          class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm bg-cyan-600 text-white hover:bg-cyan-700 transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          [disabled]="products().length === 0 || barcodeUpdating()"
-          title="Convertir todos los códigos al formato compacto"
-        >
-          @if (barcodeUpdating()) {
-            <ng-icon hlm name="lucideLoader" size="sm" class="animate-spin"></ng-icon>
-            <span class="hidden sm:inline">Actualizando...</span>
-          } @else {
-            <ng-icon hlm name="lucideScanBarcode" size="sm"></ng-icon>
-            <span class="hidden sm:inline">Actualizar Códigos</span>
-          }
         </button>
       </div>
     </div>
