@@ -1,5 +1,7 @@
 # Inventory To CSV - AI-Powered Inventory Management System
 
+> Version 0.4.2
+
 A modern inventory processing and management system that uses **Google Gemini AI** to extract product information from images. Built with Angular 21, Supabase for backend services, and styled with TailwindCSS 4.
 
 ## 🚀 Key Features
@@ -131,8 +133,15 @@ A modern inventory processing and management system that uses **Google Gemini AI
 
 - **CODE128 format** barcode visualization
 - **Compact barcode format & bulk update**: Soporta el nuevo formato compacto `XXXSY` y dispone de una acción en la lista de productos para convertir en masa códigos antiguos al nuevo formato con feedback visual.
-- **Compact barcode format & bulk update**: Soporta el nuevo formato compacto `XXXSY` y dispone de una acción en la lista de productos para convertir en masa códigos antiguos al nuevo formato con feedback visual.
+- **Barcode Print Tracking**: Track which products have their barcodes printed
+  - "Impreso" column with toggle button (✓ printed / ✗ not printed)
+  - Click to mark/unmark barcode as printed
+  - Sortable and filterable column
 - **Print to 80mm / PDF**: The product list includes an `Imprimir` button which opens a print-ready page formatted for 80mm thermal printers. The printed output contains only the barcode images (no product name) and is optimized for 80mm width.
+- **Optimized Print Layout**:
+  - Page size: 80mm x 70mm (vertical)
+  - Barcode: 38mm x 10mm
+  - Margins: 15mm top, 15mm left
 
 Printing notes and usage
 
