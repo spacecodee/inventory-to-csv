@@ -190,7 +190,7 @@ export class PrintService {
       <style>
         @page { size: 40mm 60mm; margin: 0; }
         html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
-        .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 1mm; gap: 1mm; }
+        .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 16mm; gap: 1mm; }
         img.bar { width: 38mm; height: 10mm; display:block; }
         .code-text { font-size: 8px; font-family: monospace; text-align: center; word-break: break-all; width: 38mm; }
       </style>
@@ -224,7 +224,7 @@ export class PrintService {
       <style>
         @page { size: 40mm 60mm; margin: 0; }
         html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
-        .label { width: 40mm; height: 60mm; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 1mm; gap: 1mm; }
+        .label { width: 40mm; height: 60mm; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 16mm; gap: 1mm; }
         .label:not(:last-child) { page-break-after: always; }
         img.bar { width: 38mm; height: 10mm; display:block; }
         .code-text { font-size: 8px; font-family: monospace; text-align: center; word-break: break-all; width: 38mm; }
