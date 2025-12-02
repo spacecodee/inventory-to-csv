@@ -188,11 +188,11 @@ export class PrintService {
   private getBarcodePrintStyles(): string {
     return `
       <style>
-        @page { size: 50mm 80mm; margin: 0; }
-        html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
-        .label { width: 50mm; height: 80mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 3mm; gap: 1mm; }
-        img.bar { width: 30mm; height: 60mm; display:block; }
-        .code-text { font-size: 14px; font-family: monospace; text-align: center; word-break: break-all; width: 53mm; }
+        @page { size: 50mm 30mm; margin: 0; }
+        html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
+        .label { width: 50mm; height: 30mm; page-break-after: always; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 1mm; box-sizing: border-box; }
+        img.bar { width: 45mm; height: 12mm; display:block; }
+        .code-text { font-size: 10px; font-family: monospace; text-align: center; word-break: break-all; width: 45mm; }
       </style>
       <style media="print">
         @page { margin: 0; }
@@ -222,12 +222,12 @@ export class PrintService {
   private getSingleBarcodePrintStyles(): string {
     return `
       <style>
-        @page { size: 40mm 60mm; margin: 0; }
+        @page { size: 50mm 30mm; margin: 0; }
         html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
-        .label { width: 40mm; height: 60mm; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 25mm; gap: 1mm; }
+        .label { width: 50mm; height: 30mm; display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 1mm; box-sizing: border-box; }
         .label:not(:last-child) { page-break-after: always; }
-        img.bar { width: 53mm; height: 14mm; display:block; }
-        .code-text { font-size: 10px; font-family: monospace; text-align: center; word-break: break-all; width: 53mm; }
+        img.bar { width: 45mm; height: 12mm; display:block; }
+        .code-text { font-size: 10px; font-family: monospace; text-align: center; word-break: break-all; width: 45mm; }
       </style>
       <style media="print">
         @page { margin: 0; }
