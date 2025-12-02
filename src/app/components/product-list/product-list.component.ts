@@ -158,6 +158,7 @@ export class ProductListComponent implements OnInit {
     { key: 'totalVenta', label: 'Total Venta', visible: true, alwaysVisible: false },
     { key: 'codigoInterno', label: 'Código', visible: true, alwaysVisible: false },
     { key: 'codigoBarras', label: 'Código Barras', visible: true, alwaysVisible: false },
+    { key: 'barcodePrinted', label: 'Impreso', visible: true, alwaysVisible: false },
     { key: 'factura', label: 'Factura', visible: true, alwaysVisible: false },
     { key: 'proveedor', label: 'Proveedor', visible: true, alwaysVisible: false },
     { key: 'createdAt', label: 'Creado', visible: true, alwaysVisible: false },
@@ -672,6 +673,12 @@ export class ProductListComponent implements OnInit {
 
   removeProduct(id: string) {
     this.inventoryService.removeProduct(id).then(() => undefined);
+  }
+
+  toggleBarcodePrinted(product: Product) {
+    this.inventoryService
+      .updateBarcodePrinted(product.id, !product.barcodePrinted)
+      .then(() => undefined);
   }
 
   clearList() {

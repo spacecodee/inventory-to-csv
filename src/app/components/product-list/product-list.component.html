@@ -443,6 +443,17 @@
               </button>
             </th>
           }
+          @if (columnVisibility()['barcodePrinted']) {
+            <th class="px-3 sm:px-6 py-2 sm:py-3">
+              <button
+                (click)="toggleSort('barcodePrinted')"
+                class="flex items-center gap-1 hover:text-foreground transition-colors"
+              >
+                Impreso
+                <ng-icon hlm [name]="getSortIcon('barcodePrinted')" size="xs"></ng-icon>
+              </button>
+            </th>
+          }
           @if (columnVisibility()['factura']) {
             <th class="px-3 sm:px-6 py-2 sm:py-3">
               <button
@@ -583,6 +594,21 @@
               @if (columnVisibility()['codigoBarras']) {
                 <td class="px-3 sm:px-6 py-3 sm:py-4 font-mono text-[10px] sm:text-xs">
                   {{ product.codigoBarras }}
+                </td>
+              }
+              @if (columnVisibility()['barcodePrinted']) {
+                <td class="px-3 sm:px-6 py-3 sm:py-4">
+                  <button
+                    (click)="toggleBarcodePrinted(product)"
+                    class="flex items-center justify-center transition-colors"
+                    [title]="product.barcodePrinted ? 'Marcar como no impreso' : 'Marcar como impreso'"
+                  >
+                    @if (product.barcodePrinted) {
+                      <ng-icon hlm name="lucideCheck" size="sm" class="text-emerald-500"></ng-icon>
+                    } @else {
+                      <ng-icon hlm name="lucideX" size="sm" class="text-muted-foreground"></ng-icon>
+                    }
+                  </button>
                 </td>
               }
               @if (columnVisibility()['factura']) {

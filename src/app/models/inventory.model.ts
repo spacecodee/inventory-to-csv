@@ -44,6 +44,7 @@ export interface ProductEntity {
   codigo_lote: string | null;
   fecha_vencimiento: string | null;
   codigo_barras: string | null;
+  barcode_printed: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -69,6 +70,7 @@ export interface ProductInsert {
   codigo_lote?: string | null;
   fecha_vencimiento?: string | null;
   codigo_barras?: string | null;
+  barcode_printed?: boolean;
 }
 
 export interface ProductUpdate {
@@ -92,6 +94,7 @@ export interface ProductUpdate {
   codigo_lote?: string | null;
   fecha_vencimiento?: string | null;
   codigo_barras?: string | null;
+  barcode_printed?: boolean;
 }
 
 export interface ProductImageEntity {
@@ -141,6 +144,7 @@ export interface Product {
   codigoLote: string;
   fechaVencimiento: string;
   codigoBarras: string;
+  barcodePrinted: boolean;
   imagenes: ProductImage[];
   supplierInvoices?: SupplierInvoice[];
   imageFiles?: File[];

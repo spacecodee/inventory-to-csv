@@ -75,6 +75,7 @@ export class InventoryService {
       codigo_lote: product.codigoLote || null,
       fecha_vencimiento: product.fechaVencimiento || null,
       codigo_barras: product.codigoBarras || null,
+      barcode_printed: product.barcodePrinted || false,
     };
 
     const { data, error } = await this.supabase.client
@@ -121,6 +122,7 @@ export class InventoryService {
       codigo_lote: updatedProduct.codigoLote || null,
       fecha_vencimiento: updatedProduct.fechaVencimiento || null,
       codigo_barras: updatedProduct.codigoBarras || null,
+      barcode_printed: updatedProduct.barcodePrinted || false,
     };
 
     const { error } = await this.supabase.client
@@ -338,10 +340,27 @@ export class InventoryService {
       codigoLote: entity.codigo_lote || '',
       fechaVencimiento: entity.fecha_vencimiento || '',
       codigoBarras: entity.codigo_barras || '',
+      barcodePrinted: entity.barcode_printed || false,
       imagenes: images,
       supplierInvoices,
       createdAt: entity.created_at || '',
       updatedAt: entity.updated_at || '',
     };
+  }
+
+  async updateBarcodePrinted(productId: string, printed: boolean): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('products')
+      .update({ barcode_printed: printed })
+      .eq('id', productId);
+
+    if (error) {
+      console.error('Error updating barcode_printed:', error);
+      throw error;
+    }
+
+    this.productsSignal.update((products) =>
+      products.map((p) => (p.id === productId ? { ...p, barcodePrinted: printed } : p))
+    );
   }
 }
