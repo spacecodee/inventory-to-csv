@@ -180,6 +180,7 @@ export class ProductListComponent implements OnInit {
         marca: '',
         codigoInterno: '',
         codigoBarras: '',
+        barcodePrinted: '',
         createdAtFrom: '',
         createdAtTo: '',
         updatedAtFrom: '',
@@ -347,6 +348,11 @@ export class ProductListComponent implements OnInit {
     if (filters['codigoBarras']) {
       const filterValue = filters['codigoBarras'].toLowerCase();
       products = products.filter((p) => p.codigoBarras.toLowerCase().includes(filterValue));
+    }
+
+    if (filters['barcodePrinted']) {
+      const isPrinted = filters['barcodePrinted'] === 'true';
+      products = products.filter((p) => p.barcodePrinted === isPrinted);
     }
 
     if (filters['createdAtFrom']) {
@@ -551,6 +557,8 @@ export class ProductListComponent implements OnInit {
         return product.codigoInterno;
       case 'codigoBarras':
         return product.codigoBarras;
+      case 'barcodePrinted':
+        return product.barcodePrinted ? 1 : 0;
       case 'factura':
         return product.supplierInvoices?.[0]?.numeroFactura ?? '';
       case 'proveedor':
@@ -677,8 +685,8 @@ export class ProductListComponent implements OnInit {
 
   toggleBarcodePrinted(product: Product) {
     this.inventoryService
-      .updateBarcodePrinted(product.id, !product.barcodePrinted)
-      .then(() => undefined);
+    .updateBarcodePrinted(product.id, !product.barcodePrinted)
+    .then(() => undefined);
   }
 
   clearList() {
