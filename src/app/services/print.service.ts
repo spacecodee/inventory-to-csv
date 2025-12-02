@@ -8,8 +8,8 @@ import { NotificationService } from './notification.service';
 export class PrintService {
   private readonly notificationService = inject(NotificationService);
 
-  async printBarcodesToPdf(products: Product[]): Promise<void> {
-    if (!products || products.length === 0) return;
+  async printBarcodesToPdf(products: Product[]): Promise<string[]> {
+    if (!products || products.length === 0) return [];
 
     this.notificationService.info('Preparing printable document...');
 
@@ -39,7 +39,7 @@ export class PrintService {
       const win = globalThis.open('', '_blank');
       if (!win) {
         this.notificationService.error('Unable to open print window');
-        return;
+        return [];
       }
 
       const style = this.getBarcodePrintStyles();
@@ -53,10 +53,12 @@ export class PrintService {
 
       this.writeToPrintWindow(win, 'Print Barcodes', style, bodyHtml);
       this.triggerPrint(win);
+      return products.map(p => p.id);
     } catch (err: unknown) {
       console.error('Print generation error', err);
       const errorMessage = err instanceof Error ? err.message : String(err);
       this.notificationService.error('Error preparing print', errorMessage);
+      return [];
     }
   }
 
@@ -90,8 +92,8 @@ export class PrintService {
     }
   }
 
-  async printProductBarcode(product: Product, copies: number): Promise<void> {
-    if (copies <= 0) return;
+  async printProductBarcode(product: Product, copies: number): Promise<boolean> {
+    if (copies <= 0) return false;
 
     this.notificationService.info(`Preparing ${ copies } barcode(s)...`);
 
@@ -102,7 +104,7 @@ export class PrintService {
       const win = globalThis.open('', '_blank');
       if (!win) {
         this.notificationService.error('Unable to open print window');
-        return;
+        return false;
       }
 
       const style = this.getSingleBarcodePrintStyles();
@@ -129,10 +131,12 @@ export class PrintService {
 
       this.writeToPrintWindow(win, 'Print Barcode', style, bodyHtml);
       this.triggerPrint(win);
+      return true;
     } catch (err: unknown) {
       console.error('Print barcode error', err);
       const errorMessage = err instanceof Error ? err.message : String(err);
       this.notificationService.error('Error preparing barcode', errorMessage);
+      return false;
     }
   }
 

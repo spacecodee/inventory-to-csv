@@ -702,7 +702,10 @@ export class ProductListComponent implements OnInit {
   }
 
   async printProductBarcode(product: Product, copies: number) {
-    await this.printService.printProductBarcode(product, copies);
+    const printed = await this.printService.printProductBarcode(product, copies);
+    if (printed && !product.barcodePrinted) {
+      await this.inventoryService.updateBarcodePrinted(product.id, true);
+    }
   }
 
   async printProductLabel(product: Product, copies: number) {
