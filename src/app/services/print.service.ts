@@ -188,7 +188,7 @@ export class PrintService {
   private getBarcodePrintStyles(): string {
     return `
       <style>
-        @page { size: 40mm 60mm; margin: 0; }
+        @page { size: 50mm 80mm; margin: 0; }
         html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
         .label { width: 50mm; height: 80mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 3mm; gap: 1mm; }
         img.bar { width: 30mm; height: 60mm; display:block; }
