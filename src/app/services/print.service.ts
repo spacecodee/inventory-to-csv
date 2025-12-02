@@ -190,9 +190,9 @@ export class PrintService {
       <style>
         @page { size: 40mm 60mm; margin: 0; }
         html, body { margin: 0; padding: 2mm; font-family: Arial, Helvetica, sans-serif; }
-        .label { width: 40mm; height: 60mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 25mm; gap: 1mm; }
-        img.bar { width: 53mm; height: 14mm; display:block; }
-        .code-text { font-size: 10px; font-family: monospace; text-align: center; word-break: break-all; width: 53mm; }
+        .label { width: 50mm; height: 80mm; page-break-after: always; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; padding-top: 3mm; padding-left: 3mm; gap: 1mm; }
+        img.bar { width: 30mm; height: 60mm; display:block; }
+        .code-text { font-size: 14px; font-family: monospace; text-align: center; word-break: break-all; width: 53mm; }
       </style>
       <style media="print">
         @page { margin: 0; }
