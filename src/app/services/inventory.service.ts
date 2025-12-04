@@ -5,6 +5,7 @@ import {
   ProductImageInsert,
   ProductInsert,
 } from '../models/inventory.model';
+import { AiService } from './ai.service';
 import { CategoryService } from './category.service';
 import { ImageOptimizationService } from './image-optimization.service';
 import { SupabaseService } from './supabase.service';
@@ -16,6 +17,7 @@ export class InventoryService {
   private readonly supabase = inject(SupabaseService);
   private readonly categoryService = inject(CategoryService);
   private readonly imageOptimization = inject(ImageOptimizationService);
+  private readonly aiService = inject(AiService);
   private readonly productsSignal = signal<Product[]>([]);
   readonly products = this.productsSignal.asReadonly();
 
@@ -51,7 +53,40 @@ export class InventoryService {
     this.productsSignal.set(products);
   }
 
+  private async checkDuplicateFields(
+    product: Product
+  ): Promise<{ isDuplicate: boolean; duplicateFields: string[] }> {
+    const products = this.productsSignal();
+    const duplicateFields: string[] = [];
+
+    if (product.codigoInterno && products.some((p) => p.codigoInterno === product.codigoInterno)) {
+      duplicateFields.push('código interno');
+    }
+
+    if (product.modelo && products.some((p) => p.modelo === product.modelo)) {
+      duplicateFields.push('modelo');
+    }
+
+    if (product.codigoBarras && products.some((p) => p.codigoBarras === product.codigoBarras)) {
+      duplicateFields.push('código de barras');
+    }
+
+    return {
+      isDuplicate: duplicateFields.length > 0,
+      duplicateFields,
+    };
+  }
+
   async addProduct(product: Product): Promise<void> {
+    const duplicateCheck = await this.checkDuplicateFields(product);
+
+    if (duplicateCheck.isDuplicate) {
+      const fields = duplicateCheck.duplicateFields.join(', ');
+      throw new Error(
+        `Ya existe un producto con el mismo ${ fields }. Por favor, verifica los datos.`
+      );
+    }
+
     const categoryId = await this.getCategoryIdByName(product.categoria);
 
     const productInsert: ProductInsert = {
@@ -96,6 +131,34 @@ export class InventoryService {
     }
 
     await this.loadProducts();
+  }
+
+  async addProductWithRetry(product: Product, maxRetries: number = 3): Promise<void> {
+    let lastError: Error | null = null;
+    let attempts = 0;
+
+    while (attempts < maxRetries) {
+      try {
+        await this.addProduct(product);
+        return;
+      } catch (error) {
+        lastError = error as Error;
+        attempts++;
+
+        if (attempts < maxRetries && lastError.message.includes('Ya existe un producto')) {
+          const newCodes = this.aiService.regenerateCodes();
+          product.codigoInterno = newCodes.codigoInterno;
+          product.modelo = newCodes.modelo;
+          product.codigoBarras = newCodes.codigoBarras;
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
+    }
   }
 
   async updateProduct(updatedProduct: Product): Promise<void> {
@@ -350,9 +413,9 @@ export class InventoryService {
 
   async updateBarcodePrinted(productId: string, printed: boolean): Promise<void> {
     const { error } = await this.supabase.client
-      .from('products')
-      .update({ barcode_printed: printed })
-      .eq('id', productId);
+    .from('products')
+    .update({ barcode_printed: printed })
+    .eq('id', productId);
 
     if (error) {
       console.error('Error updating barcode_printed:', error);

@@ -133,17 +133,18 @@ export class UploadComponent {
         imageFiles: files,
       };
 
-      await this.inventoryService.addProduct(newProduct);
+      await this.inventoryService.addProductWithRetry(newProduct);
       this.notification.success(
         'Producto agregado',
         'El producto se ha guardado exitosamente en la base de datos.'
       );
     } catch (error) {
       console.error('Error processing files:', error);
-      this.notification.error(
-        'Error al procesar',
-        'Ocurrió un error al procesar el producto. Intenta de nuevo.'
-      );
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Ocurrió un error al procesar el producto. Intenta de nuevo.';
+      this.notification.error('Error al procesar', errorMessage);
     } finally {
       this.isProcessing.set(false);
     }

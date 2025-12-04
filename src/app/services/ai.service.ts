@@ -60,11 +60,11 @@ export class AiService {
 
       let suffix = (data.genero || 'GEN').toUpperCase();
       const suffixMap: { [key: string]: string } = {
-        'H': 'H',
-        'M': 'M',
-        'MIX': 'X',
-        'NA': 'N',
-        'GEN': 'G',
+        H: 'H',
+        M: 'M',
+        MIX: 'X',
+        NA: 'N',
+        GEN: 'G',
       };
       suffix = suffixMap[suffix] || 'G';
 
@@ -145,6 +145,19 @@ export class AiService {
       codigoLote: '',
       fechaVencimiento: '',
       imagenes: [{ url: '', filename: file.name }],
+    };
+  }
+
+  regenerateCodes(): { codigoInterno: string; modelo: string; codigoBarras: string } {
+    const randomCode = Math.floor(100 + Math.random() * 900);
+    const checkDigit = Math.floor(Math.random() * 10);
+    const suffix = 'G';
+    const barcode = `${ randomCode }${ suffix }${ checkDigit }`;
+
+    return {
+      codigoInterno: `INT-${ randomCode }`,
+      modelo: `MOD-${ randomCode }`,
+      codigoBarras: barcode,
     };
   }
 }

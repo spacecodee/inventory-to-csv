@@ -1,6 +1,6 @@
 # Inventory To CSV - AI-Powered Inventory Management System
 
-> Version 0.4.4
+> Version 0.5.0
 
 A modern inventory processing and management system that uses **Google Gemini AI** to extract product information from images. Built with Angular 21, Supabase for backend services, and styled with TailwindCSS 4.
 
