@@ -19,8 +19,11 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - **Multiple AI Provider Support**:
   - **Google Gemini**: Select from 6 predefined models
     - `gemini-2.0-flash-lite`, `gemini-2.0-flash`, `gemini-2.5-pro`, `gemini-2.5-flash-lite`, `gemini-2.5-flash`, `gemini-3-pro-preview`
-  - **OpenRouter**: Enter any OpenRouter model ID (e.g., `tngtech/deepseek-r1t2-chimera:free`)
-    - Access to hundreds of models from multiple providers
+  - **OpenRouter**: Enter any OpenRouter model ID with vision capabilities
+    - ⚠️ **Important**: Only models with **vision/image support** work for product analysis
+    - Recommended free models: `google/gemini-2.0-flash-exp:free`, `meta-llama/llama-3.2-11b-vision-instruct:free`
+    - Recommended paid models: `anthropic/claude-3.5-sonnet`, `openai/gpt-4o`, `google/gemini-2.0-flash-thinking-exp`
+    - Access to hundreds of vision-capable models from multiple providers
     - Enter custom model IDs directly
   - Default provider: Google Gemini
   - Default model: `gemini-2.5-flash`

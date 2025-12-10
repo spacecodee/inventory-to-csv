@@ -149,42 +149,73 @@ export class AiService {
 
   private async analyzeWithOpenRouter(files: File[], prompt: string): Promise<string> {
     const apiKey = environment.openrouterApiKey;
-    if (!apiKey) {
-      throw new Error('OpenRouter API key not configured');
+    if (!apiKey || apiKey.trim() === '') {
+      throw new Error(
+        'OpenRouter API key not configured. Please add your API key in the environment configuration.'
+      );
     }
 
-    const openrouter = new OpenRouter({ apiKey });
     const modelId = this.getOpenrouterModel();
-
-    const imageContents = await Promise.all(
-      files.map(async (file) => ({
-        type: 'image' as const,
-        image: new URL(`data:${ file.type };base64,${ await this.fileToBase64(file) }`),
-      }))
-    );
-
-    const messages = [
-      {
-        role: 'user' as const,
-        content: [{ type: 'text' as const, text: prompt }, ...imageContents],
-      },
-    ];
-
-    let fullText = '';
-    const stream = await openrouter.chat.send({
-      model: modelId,
-      messages: messages as any,
-      stream: true,
-    });
-
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content;
-      if (content) {
-        fullText += content;
-      }
+    if (!modelId || modelId.trim() === '') {
+      throw new Error(
+        'OpenRouter model ID not configured. Please select a model in the AI settings.'
+      );
     }
 
-    return fullText;
+    try {
+      const openrouter = new OpenRouter({ apiKey });
+
+      const imageContents = await Promise.all(
+        files.map(async (file) => ({
+          type: 'image_url' as const,
+          imageUrl: {
+            url: `data:${ file.type };base64,${ await this.fileToBase64(file) }`,
+          },
+        }))
+      );
+
+      const messages = [
+        {
+          role: 'user' as const,
+          content: [{ type: 'text' as const, text: prompt }, ...imageContents],
+        },
+      ];
+
+      let fullText = '';
+      const stream = await openrouter.chat.send({
+        model: modelId,
+        messages: messages,
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content;
+        if (content) {
+          fullText += content;
+        }
+      }
+
+      return fullText;
+    } catch (error: any) {
+      const errorMessage = error?.body?.error?.message || error?.message || '';
+
+      if (error?.status === 404 && errorMessage.includes('image input')) {
+        throw new Error(
+          `El modelo "${ modelId }" NO soporta análisis de imágenes.\n\nUsa un modelo con capacidades de visión como:\n- google/gemini-2.0-flash-exp:free\n- meta-llama/llama-3.2-11b-vision-instruct:free\n- anthropic/claude-3.5-sonnet\n- openai/gpt-4o`
+        );
+      } else if (error?.status === 429) {
+        throw new Error(
+          `OpenRouter rate limit exceeded. This could mean:\n- Invalid or empty API key\n- Model "${ modelId }" doesn't exist or isn't available\n- Free tier limits reached\n\nPlease verify your API key and model ID in settings.`
+        );
+      } else if (error?.status === 401) {
+        throw new Error('OpenRouter authentication failed. Please verify your API key is correct.');
+      } else if (error?.status === 404) {
+        throw new Error(
+          `OpenRouter model "${ modelId }" not found. Please verify the model ID is correct.`
+        );
+      }
+      throw error;
+    }
   }
 
   private async fileToBase64(file: File): Promise<string> {
