@@ -1,9 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 
+export type AiProvider = 'gemini' | 'openrouter';
+
 export interface SystemConfig {
   igvPercentage: number;
   transportCost: number;
+  aiProvider: AiProvider;
   aiModel: string;
+  openrouterModel: string;
 }
 
 const STORAGE_KEY = 'system-config';
@@ -11,21 +15,20 @@ const STORAGE_KEY = 'system-config';
 const DEFAULT_CONFIG: SystemConfig = {
   igvPercentage: 18,
   transportCost: 0,
+  aiProvider: 'gemini',
   aiModel: 'gemini-2.5-flash',
+  openrouterModel: '',
 };
 
-export const AI_MODELS = [
+export const AI_PROVIDERS = ['gemini', 'openrouter'] as const;
+
+export const GEMINI_MODELS = [
   'gemini-2.0-flash-lite',
   'gemini-2.0-flash',
   'gemini-2.5-pro',
   'gemini-2.5-flash-lite',
   'gemini-2.5-flash',
   'gemini-3-pro-preview',
-  'gemma-3-27b',
-  'gemma-3-12b',
-  'gemma-3-1b',
-  'gemma-3-2b',
-  'gemma-3-4b',
 ] as const;
 
 @Injectable({
@@ -36,7 +39,9 @@ export class SystemConfigService {
 
   readonly igvPercentage = () => this.configSignal().igvPercentage;
   readonly transportCost = () => this.configSignal().transportCost;
+  readonly aiProvider = () => this.configSignal().aiProvider;
   readonly aiModel = () => this.configSignal().aiModel;
+  readonly openrouterModel = () => this.configSignal().openrouterModel;
 
   private loadFromStorage(): SystemConfig {
     try {
@@ -50,9 +55,21 @@ export class SystemConfigService {
     return DEFAULT_CONFIG;
   }
 
+  updateAiProvider(provider: AiProvider): void {
+    const current = this.configSignal();
+    this.configSignal.set({ ...current, aiProvider: provider });
+    this.saveToStorage();
+  }
+
   updateAiModel(model: string): void {
     const current = this.configSignal();
     this.configSignal.set({ ...current, aiModel: model });
+    this.saveToStorage();
+  }
+
+  updateOpenrouterModel(model: string): void {
+    const current = this.configSignal();
+    this.configSignal.set({ ...current, openrouterModel: model });
     this.saveToStorage();
   }
 

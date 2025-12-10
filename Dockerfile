@@ -12,15 +12,19 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 RUN --mount=type=secret,id=google_gemini_api_key \
+    --mount=type=secret,id=openrouter_api_key \
     --mount=type=secret,id=supabase_url \
     --mount=type=secret,id=supabase_anon_key \
     GEMINI_KEY="$(cat /run/secrets/google_gemini_api_key 2>/dev/null || echo '')" && \
+    OPENROUTER_KEY="$(cat /run/secrets/openrouter_api_key 2>/dev/null || echo '')" && \
     SUPABASE_URL_VALUE="$(cat /run/secrets/supabase_url 2>/dev/null || echo '')" && \
     SUPABASE_KEY="$(cat /run/secrets/supabase_anon_key 2>/dev/null || echo '')" && \
     if [ -z "$GEMINI_KEY" ]; then echo "ERROR: GOOGLE_GEMINI_API_KEY is required"; exit 1; fi && \
+    if [ -z "$OPENROUTER_KEY" ]; then echo "ERROR: OPENROUTER_API_KEY is required"; exit 1; fi && \
     if [ -z "$SUPABASE_URL_VALUE" ]; then echo "ERROR: SUPABASE_URL is required"; exit 1; fi && \
     if [ -z "$SUPABASE_KEY" ]; then echo "ERROR: SUPABASE_ANON_KEY is required"; exit 1; fi && \
     sed -i "s|__GOOGLE_GEMINI_API_KEY_PLACEHOLDER__|${GEMINI_KEY}|g" src/environments/environment.prod.ts && \
+    sed -i "s|__OPENROUTER_API_KEY_PLACEHOLDER__|${OPENROUTER_KEY}|g" src/environments/environment.prod.ts && \
     sed -i "s|__SUPABASE_URL_PLACEHOLDER__|${SUPABASE_URL_VALUE}|g" src/environments/environment.prod.ts && \
     sed -i "s|__SUPABASE_ANON_KEY_PLACEHOLDER__|${SUPABASE_KEY}|g" src/environments/environment.prod.ts
 

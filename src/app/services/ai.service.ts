@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { OpenRouter } from '@openrouter/sdk';
 import { environment } from '../../environments/environment';
 import { Product } from '../models/inventory.model';
 import { CategoryService } from './category.service';
@@ -13,13 +14,24 @@ export class AiService {
   private readonly systemConfigService = inject(SystemConfigService);
   private readonly genAI = new GoogleGenerativeAI(environment.googleGeminiApiKey);
 
-  private getModel() {
-    return this.genAI.getGenerativeModel({ model: this.systemConfigService.aiModel() });
+  private getGeminiModel() {
+    const model = this.systemConfigService.aiModel();
+    if (!model) {
+      throw new Error('Gemini model not configured');
+    }
+    return this.genAI.getGenerativeModel({ model });
+  }
+
+  private getOpenrouterModel() {
+    const model = this.systemConfigService.openrouterModel();
+    if (!model) {
+      throw new Error('OpenRouter model not configured');
+    }
+    return model;
   }
 
   async analyzeProduct(files: File[]): Promise<Partial<Product>> {
     try {
-      const imagesParts = await Promise.all(files.map((f) => this.fileToGenerativePart(f)));
       const categories = this.categoryService.getCategoryNames();
 
       const prompt = `
@@ -48,9 +60,14 @@ export class AiService {
         }
       `;
 
-      const result = await this.getModel().generateContent([prompt, ...imagesParts]);
-      const response = result.response;
-      const text = response.text();
+      const provider = this.systemConfigService.aiProvider();
+      let text: string;
+
+      if (provider === 'openrouter') {
+        text = await this.analyzeWithOpenRouter(files, prompt);
+      } else {
+        text = await this.analyzeWithGemini(files, prompt);
+      }
 
       const cleanJson = text.replaceAll('```json', '').replaceAll('```', '').trim();
       const data = JSON.parse(cleanJson);
@@ -117,6 +134,66 @@ export class AiService {
             mimeType: file.type,
           },
         });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private async analyzeWithGemini(files: File[], prompt: string): Promise<string> {
+    const imagesParts = await Promise.all(files.map((f) => this.fileToGenerativePart(f)));
+    const model = this.getGeminiModel();
+    const result = await model.generateContent([prompt, ...imagesParts]);
+    return result.response.text();
+  }
+
+  private async analyzeWithOpenRouter(files: File[], prompt: string): Promise<string> {
+    const apiKey = environment.openrouterApiKey;
+    if (!apiKey) {
+      throw new Error('OpenRouter API key not configured');
+    }
+
+    const openrouter = new OpenRouter({ apiKey });
+    const modelId = this.getOpenrouterModel();
+
+    const imageContents = await Promise.all(
+      files.map(async (file) => ({
+        type: 'image' as const,
+        image: new URL(`data:${ file.type };base64,${ await this.fileToBase64(file) }`),
+      }))
+    );
+
+    const messages = [
+      {
+        role: 'user' as const,
+        content: [{ type: 'text' as const, text: prompt }, ...imageContents],
+      },
+    ];
+
+    let fullText = '';
+    const stream = await openrouter.chat.send({
+      model: modelId,
+      messages: messages as any,
+      stream: true,
+    });
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) {
+        fullText += content;
+      }
+    }
+
+    return fullText;
+  }
+
+  private async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);

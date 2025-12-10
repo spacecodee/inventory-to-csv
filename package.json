@@ -21,7 +21,7 @@
     ]
   },
   "private": true,
-  "packageManager": "pnpm@10.22.0",
+  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501",
   "dependencies": {
     "@angular/cdk": "21.0.0",
     "@angular/common": "^21.0.0",
@@ -33,6 +33,7 @@
     "@google/generative-ai": "^0.24.1",
     "@ng-icons/core": "^31.4.0",
     "@ng-icons/lucide": ">=32.0.0 <34.0.0",
+    "@openrouter/sdk": "^0.2.9",
     "@spartan-ng/brain": "0.0.1-alpha.564",
     "@supabase/supabase-js": "^2.84.0",
     "@tailwindcss/postcss": "^4.1.17",
