@@ -1,6 +1,6 @@
 # Inventory To CSV - AI-Powered Inventory Management System
 
-> Version 0.8.0
+> Version 0.9.0
 
 A modern inventory processing and management system that uses **Google Gemini AI** to extract product information from images. Built with Angular 21, Supabase for backend services, and styled with TailwindCSS 4.
 
@@ -156,6 +156,17 @@ A modern inventory processing and management system that uses **Google Gemini AI
   - Click to mark/unmark barcode as printed
   - Sortable and filterable column
 - **Print to 80mm / PDF**: The product list includes an `Imprimir` button which opens a print-ready page formatted for 80mm thermal printers. The printed output contains only the barcode images (no product name) and is optimized for 80mm width.
+- **A4 PDF Export with Barcodes**:
+  - Export products to A4 PDF with name and barcode images
+  - Customizable layout options:
+    - **Date range filtering**: Print products from specific dates
+    - **Sorting options**: Sort by name, barcode, or creation date
+    - **Sort order**: Ascending or descending
+    - **Barcode size**: Small (3 columns), Medium, or Large
+    - **Toggle elements**: Show/hide product name and barcode
+  - Automatic page numbering
+  - Real-time product count preview
+  - Professional layout with borders and proper spacing
 - **Optimized Print Layout**:
   - Page size: 80mm x 70mm (vertical)
   - Barcode: 38mm x 10mm

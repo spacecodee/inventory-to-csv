@@ -1,0 +1,146 @@
+<dialog
+  open
+  class="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4 m-0 w-full h-full max-w-full max-h-full"
+  (click)="onCancel()"
+  (keydown.escape)="onCancel()"
+>
+  <div class="fixed inset-0 bg-black/50"></div>
+  <div
+    class="relative bg-card rounded-xl border border-border shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+    (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()"
+  >
+    <div
+      class="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-card z-10"
+    >
+      <h3 class="text-lg font-semibold text-foreground">Opciones de Impresión PDF</h3>
+      <button
+        (click)="onCancel()"
+        class="text-muted-foreground hover:text-foreground transition-colors p-1"
+      >
+        <ng-icon hlm name="lucideX" size="sm"></ng-icon>
+      </button>
+    </div>
+
+    <form [formGroup]="form" class="p-4 space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label class="text-xs text-muted-foreground" for="barcodeSize">
+            Tamaño del código de barras
+          </label>
+          <select
+            class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            id="barcodeSize"
+            formControlName="barcodeSize"
+          >
+            <option value="small">Pequeño (3 columnas)</option>
+            <option value="medium">Mediano</option>
+            <option value="large">Grande</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label class="text-xs text-muted-foreground" for="sortBy">Ordenar por</label>
+          <select
+            class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            id="sortBy"
+            formControlName="sortBy"
+          >
+            <option value="name">Nombre del producto</option>
+            <option value="barcode">Código de barras</option>
+            <option value="createdDate">Fecha de creación</option>
+          </select>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs text-muted-foreground" for="sortOrder">Orden</label>
+          <select
+            class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            id="sortOrder"
+            formControlName="sortOrder"
+          >
+            <option value="asc">Ascendente</option>
+            <option value="desc">Descendente</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="border-t border-border pt-4">
+        <h4 class="text-sm font-medium text-foreground mb-3">Filtrar por fechas (opcional)</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="text-xs text-muted-foreground" for="startDate">Desde</label>
+            <input
+              class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+              type="date"
+              id="startDate"
+              formControlName="startDate"
+            />
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs text-muted-foreground" for="endDate">Hasta</label>
+            <input
+              class="w-full px-3 py-2 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+              type="date"
+              id="endDate"
+              formControlName="endDate"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-border pt-4">
+        <h4 class="text-sm font-medium text-foreground mb-3">Elementos a incluir</h4>
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="includeProductName"
+              formControlName="includeProductName"
+              class="w-4 h-4 cursor-pointer accent-primary"
+            />
+            <label class="text-sm text-muted-foreground cursor-pointer" for="includeProductName">
+              Incluir nombre del producto
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="includeProductCode"
+              formControlName="includeProductCode"
+              class="w-4 h-4 cursor-pointer accent-primary"
+            />
+            <label class="text-sm text-muted-foreground cursor-pointer" for="includeProductCode">
+              Incluir código de barras
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+        <p class="text-sm text-blue-600 dark:text-blue-400">
+          <strong>Resumen:</strong> Se imprimirán {{ filteredProductCount() }} de
+          {{ totalProducts() }} productos.
+        </p>
+      </div>
+    </form>
+
+    <div class="flex gap-3 p-4 border-t border-border sticky bottom-0 bg-card">
+      <button
+        (click)="onCancel()"
+        class="flex-1 px-4 py-2 rounded-lg text-sm border border-border hover:bg-secondary/50 transition-colors"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="onPrint()"
+        [disabled]="!canPrint()"
+        class="flex-1 px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-500 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Generar PDF
+      </button>
+    </div>
+  </div>
+</dialog>

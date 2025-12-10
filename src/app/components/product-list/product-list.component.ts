@@ -45,11 +45,13 @@ import { BarcodeService } from '../../services/barcode.service';
 import { ExcelImportResult, ExcelService } from '../../services/excel.service';
 import { InventoryService } from '../../services/inventory.service';
 import { NotificationService } from '../../services/notification.service';
+import { PdfPrintService, PrintOptions } from '../../services/pdf-print.service';
 import { PrintService } from '../../services/print.service';
 import { SystemConfigService } from '../../services/system-config.service';
 import { BarcodeSuffixDialogComponent } from './barcode-suffix-dialog/barcode-suffix-dialog';
 import { CategoryEditorDialogComponent } from './category-editor-dialog/category-editor-dialog';
 import { ImageViewerDialogComponent } from './image-viewer-dialog/image-viewer-dialog';
+import { PdfPrintDialogComponent } from './pdf-print-dialog/pdf-print-dialog';
 import { PriceCalculatorDialogComponent } from './price-calculator-dialog/price-calculator-dialog';
 import { ProductDetailComponent } from './product-detail.component';
 import { ProductNameDialogComponent } from './product-name-dialog/product-name-dialog';
@@ -73,6 +75,7 @@ import { SupplierInvoiceDialogComponent } from './supplier-invoice-dialog/suppli
     SupplierInvoiceDialogComponent,
     ProductNameDialogComponent,
     ImageViewerDialogComponent,
+    PdfPrintDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -115,6 +118,7 @@ export class ProductListComponent implements OnInit {
   private readonly barcodeService = inject(BarcodeService);
   private readonly notificationService = inject(NotificationService);
   private readonly printService = inject(PrintService);
+  private readonly pdfPrintService = inject(PdfPrintService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -949,6 +953,9 @@ export class ProductListComponent implements OnInit {
   importLoading = signal(false);
   importResult = signal<ExcelImportResult | null>(null);
 
+  showPdfPrintDialog = signal(false);
+  pdfPrintLoading = signal(false);
+
   openImportDialog() {
     this.showImportDialog.set(true);
     this.importResult.set(null);
@@ -1043,6 +1050,27 @@ export class ProductListComponent implements OnInit {
       this.notificationService.error('Error al importar', String(error));
     } finally {
       this.importLoading.set(false);
+    }
+  }
+
+  openPdfPrintDialog() {
+    this.showPdfPrintDialog.set(true);
+  }
+
+  closePdfPrintDialog() {
+    this.showPdfPrintDialog.set(false);
+  }
+
+  async onGeneratePdfPrint(options: PrintOptions) {
+    this.pdfPrintLoading.set(true);
+    try {
+      await this.pdfPrintService.generatePdf(options);
+      this.notificationService.success('PDF generado', 'El archivo PDF se descargó correctamente');
+      this.closePdfPrintDialog();
+    } catch (error) {
+      this.notificationService.error('Error al generar PDF', String(error));
+    } finally {
+      this.pdfPrintLoading.set(false);
     }
   }
 }
