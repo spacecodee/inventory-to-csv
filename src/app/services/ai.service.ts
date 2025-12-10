@@ -10,7 +10,7 @@ import { CategoryService } from './category.service';
 export class AiService {
   private readonly categoryService = inject(CategoryService);
   private readonly genAI = new GoogleGenerativeAI(environment.googleGeminiApiKey);
-  private readonly model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+  private readonly model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   async analyzeProduct(files: File[]): Promise<Partial<Product>> {
     try {
