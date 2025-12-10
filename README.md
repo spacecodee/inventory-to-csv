@@ -1,6 +1,6 @@
 # Inventory To CSV - AI-Powered Inventory Management System
 
-> Version 0.6.0
+> Version 0.7.0
 
 A modern inventory processing and management system that uses **Google Gemini AI** to extract product information from images. Built with Angular 21, Supabase for backend services, and styled with TailwindCSS 4.
 
@@ -16,8 +16,10 @@ A modern inventory processing and management system that uses **Google Gemini AI
 
 ### 🤖 AI Model Configuration
 
-- **Configurable Google Gemini Models**:
-  - Select from 6 available models: `gemini-2.0-flash-lite`, `gemini-2.0-flash`, `gemini-2.5-pro`, `gemini-2.5-flash-lite`, `gemini-2.5-flash`, `gemini-3-pro-preview`
+- **Configurable Google Gemini & Gemma Models**:
+  - Select from 11 available models:
+    - **Gemini**: `gemini-2.0-flash-lite`, `gemini-2.0-flash`, `gemini-2.5-pro`, `gemini-2.5-flash-lite`, `gemini-2.5-flash`, `gemini-3-pro-preview`
+    - **Gemma**: `gemma-3-27b`, `gemma-3-12b`, `gemma-3-4b`, `gemma-3-2b`, `gemma-3-1b`
   - Default model: `gemini-2.5-flash`
   - Settings saved in browser localStorage for persistence
   - Easy configuration via settings dialog in dashboard header

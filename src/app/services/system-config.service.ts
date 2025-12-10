@@ -21,6 +21,11 @@ export const AI_MODELS = [
   'gemini-2.5-flash-lite',
   'gemini-2.5-flash',
   'gemini-3-pro-preview',
+  'gemma-3-27b',
+  'gemma-3-12b',
+  'gemma-3-1b',
+  'gemma-3-2b',
+  'gemma-3-4b',
 ] as const;
 
 @Injectable({

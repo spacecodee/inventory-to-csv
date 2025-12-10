@@ -63,16 +63,31 @@ import { AI_MODELS, SystemConfigService } from '../../services/system-config.ser
             </div>
           </div>
 
-          <div class="text-xs text-muted-foreground bg-secondary/30 p-3 rounded-lg space-y-1">
+          <div class="text-xs text-muted-foreground bg-secondary/30 p-3 rounded-lg space-y-2">
             <p class="font-medium">Modelos Disponibles:</p>
-            <ul class="list-disc list-inside space-y-1">
-              <li>gemini-2.0-flash-lite - Rápido y económico</li>
-              <li>gemini-2.0-flash - Balance rendimiento/costo</li>
-              <li>gemini-2.5-pro - Mejor calidad</li>
-              <li>gemini-2.5-flash-lite - Rápido y económico v2.5</li>
-              <li>gemini-2.5-flash - Balance v2.5</li>
-              <li>gemini-3-pro-preview - Preview del modelo 3</li>
-            </ul>
+            <div class="space-y-2">
+              <div>
+                <p class="font-medium text-foreground mb-1">Gemini:</p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>gemini-2.0-flash-lite - Rápido y económico</li>
+                  <li>gemini-2.0-flash - Balance rendimiento/costo</li>
+                  <li>gemini-2.5-pro - Mejor calidad</li>
+                  <li>gemini-2.5-flash-lite - Rápido y económico v2.5</li>
+                  <li>gemini-2.5-flash - Balance v2.5</li>
+                  <li>gemini-3-pro-preview - Preview del modelo 3</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-medium text-foreground mb-1">Gemma:</p>
+                <ul class="list-disc list-inside space-y-1">
+                  <li>gemma-3-27b - Mejor rendimiento</li>
+                  <li>gemma-3-12b - Balance rendimiento/costo</li>
+                  <li>gemma-3-4b - Ligero y rápido</li>
+                  <li>gemma-3-2b - Muy ligero</li>
+                  <li>gemma-3-1b - Ultra ligero</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 
