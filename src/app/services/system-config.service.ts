@@ -3,6 +3,7 @@ import { Injectable, signal } from '@angular/core';
 export interface SystemConfig {
   igvPercentage: number;
   transportCost: number;
+  aiModel: string;
 }
 
 const STORAGE_KEY = 'system-config';
@@ -10,7 +11,17 @@ const STORAGE_KEY = 'system-config';
 const DEFAULT_CONFIG: SystemConfig = {
   igvPercentage: 18,
   transportCost: 0,
+  aiModel: 'gemini-2.5-flash',
 };
+
+export const AI_MODELS = [
+  'gemini-2.0-flash-lite',
+  'gemini-2.0-flash',
+  'gemini-2.5-pro',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-3-pro-preview',
+] as const;
 
 @Injectable({
   providedIn: 'root',
@@ -20,6 +31,7 @@ export class SystemConfigService {
 
   readonly igvPercentage = () => this.configSignal().igvPercentage;
   readonly transportCost = () => this.configSignal().transportCost;
+  readonly aiModel = () => this.configSignal().aiModel;
 
   private loadFromStorage(): SystemConfig {
     try {
@@ -33,4 +45,17 @@ export class SystemConfigService {
     return DEFAULT_CONFIG;
   }
 
+  updateAiModel(model: string): void {
+    const current = this.configSignal();
+    this.configSignal.set({ ...current, aiModel: model });
+    this.saveToStorage();
+  }
+
+  private saveToStorage(): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.configSignal()));
+    } catch {
+      console.error('Error saving system config to storage');
+    }
+  }
 }

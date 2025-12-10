@@ -3,14 +3,19 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { environment } from '../../environments/environment';
 import { Product } from '../models/inventory.model';
 import { CategoryService } from './category.service';
+import { SystemConfigService } from './system-config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AiService {
   private readonly categoryService = inject(CategoryService);
+  private readonly systemConfigService = inject(SystemConfigService);
   private readonly genAI = new GoogleGenerativeAI(environment.googleGeminiApiKey);
-  private readonly model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+  private getModel() {
+    return this.genAI.getGenerativeModel({ model: this.systemConfigService.aiModel() });
+  }
 
   async analyzeProduct(files: File[]): Promise<Partial<Product>> {
     try {
@@ -43,7 +48,7 @@ export class AiService {
         }
       `;
 
-      const result = await this.model.generateContent([prompt, ...imagesParts]);
+      const result = await this.getModel().generateContent([prompt, ...imagesParts]);
       const response = result.response;
       const text = response.text();
 
@@ -52,7 +57,7 @@ export class AiService {
 
       // If AI suggests a new category, add it
       if (data.esNuevaCategoria && data.categoria) {
-        this.categoryService.addCategory(data.categoria, 'Categoría generada por IA');
+        await this.categoryService.addCategory(data.categoria, 'Categoría generada por IA');
       }
 
       const randomCode = Math.floor(100 + Math.random() * 900); // 3 digits

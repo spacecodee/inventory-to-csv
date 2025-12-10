@@ -1,17 +1,24 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { provideIcons } from '@ng-icons/core';
-import { lucideBox, lucideLogOut, lucideMoon, lucideSun } from '@ng-icons/lucide';
+import { lucideBox, lucideLogOut, lucideMoon, lucideSettings, lucideSun } from '@ng-icons/lucide';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { AiModelSettingsDialogComponent } from '../ai-model-settings-dialog/ai-model-settings-dialog';
 import { CategoryManagerComponent } from '../category-manager/category-manager.component';
 import { ProductListComponent } from '../product-list/product-list.component';
 import { UploadComponent } from '../upload/upload.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [UploadComponent, ProductListComponent, CategoryManagerComponent, HlmIconImports],
-  providers: [provideIcons({ lucideBox, lucideLogOut, lucideMoon, lucideSun })],
+  imports: [
+    UploadComponent,
+    ProductListComponent,
+    CategoryManagerComponent,
+    HlmIconImports,
+    AiModelSettingsDialogComponent,
+  ],
+  providers: [provideIcons({ lucideBox, lucideLogOut, lucideMoon, lucideSun, lucideSettings })],
   template: `
     <div class="min-h-screen bg-background font-sans text-foreground flex flex-col">
       <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
@@ -37,6 +44,15 @@ import { UploadComponent } from '../upload/upload.component';
                 <p class="text-xs text-muted-foreground">Usuario activo</p>
               </div>
             }
+
+            <button
+              (click)="openAiSettings()"
+              class="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-foreground hover:bg-accent rounded-lg transition-colors"
+              [attr.aria-label]="'Configurar modelo de IA'"
+              title="Configurar modelo de IA"
+            >
+              <ng-icon hlm name="lucideSettings" size="sm"></ng-icon>
+            </button>
 
             <button
               (click)="toggleTheme()"
@@ -84,6 +100,12 @@ import { UploadComponent } from '../upload/upload.component';
           <p>&copy; {{ currentYear }} Inventory AI. Generación automática de inventarios.</p>
         </div>
       </footer>
+
+      @if (showAiSettings()) {
+        <app-ai-model-settings-dialog
+          (closeDialog)="closeAiSettings()"
+        ></app-ai-model-settings-dialog>
+      }
     </div>
   `,
 })
@@ -91,6 +113,7 @@ export class DashboardComponent {
   protected readonly authService = inject(AuthService);
   protected readonly themeService = inject(ThemeService);
   protected readonly currentYear = new Date().getFullYear();
+  protected readonly showAiSettings = signal(false);
 
   protected async onLogout(): Promise<void> {
     await this.authService.signOut();
@@ -98,5 +121,13 @@ export class DashboardComponent {
 
   protected toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  protected openAiSettings(): void {
+    this.showAiSettings.set(true);
+  }
+
+  protected closeAiSettings(): void {
+    this.showAiSettings.set(false);
   }
 }
