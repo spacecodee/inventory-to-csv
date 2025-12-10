@@ -1,6 +1,6 @@
 # Inventory To CSV - AI-Powered Inventory Management System
 
-> Version 0.4.3
+> Version 0.5.0
 
 A modern inventory processing and management system that uses **Google Gemini AI** to extract product information from images. Built with Angular 21, Supabase for backend services, and styled with TailwindCSS 4.
 
@@ -78,6 +78,7 @@ A modern inventory processing and management system that uses **Google Gemini AI
 - **Column Sorting**: Click any column header to sort ascending/descending with visual indicators
 - **Advanced Filtering**: Expandable filter panel with:
   - Text filters for name, category, brand, internal code, barcode
+  - Barcode print status filter (Impreso / No impreso)
   - Date range filters for creation and update dates
   - Clear all filters button
   - Active filter indicator badge

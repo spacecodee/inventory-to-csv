@@ -233,6 +233,21 @@
               class="w-full px-3 py-1.5 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
+          <div>
+            <label for="filter-barcodePrinted" class="block text-xs text-muted-foreground mb-1"
+            >Impreso</label
+            >
+            <select
+              id="filter-barcodePrinted"
+              [ngModel]="columnFilters()['barcodePrinted']"
+              (ngModelChange)="updateColumnFilter('barcodePrinted', $event)"
+              class="w-full px-3 py-1.5 text-sm rounded-lg bg-secondary/20 border border-border focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="">Todos</option>
+              <option value="true">Impreso</option>
+              <option value="false">No impreso</option>
+            </select>
+          </div>
         </div>
 
         <div
